@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Search, Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { getMovimientosCaja, type MovimientoCaja } from '../lib/caja-api';
 import { toast } from 'sonner';

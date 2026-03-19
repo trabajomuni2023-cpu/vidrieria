@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Save, Building, User, DollarSign, Package as PackageIcon, Briefcase, Shield, KeyRound, Plus, Edit2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Select } from '../components/ui/select';
 import { Modal } from '../components/ui/Modal';
 import { toast } from 'sonner';
 import {

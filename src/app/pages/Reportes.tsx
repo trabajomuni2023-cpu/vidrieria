@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TrendingUp, TrendingDown, Briefcase, DollarSign, Download } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Select } from '../components/ui/Select';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Select } from '../components/ui/select';
 import { formatCurrency } from '../lib/utils';
 import { getReportes, type ReportesResumen } from '../lib/reportes-api';
 import { toast } from 'sonner';

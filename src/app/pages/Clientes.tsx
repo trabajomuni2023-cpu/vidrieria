@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Search, Plus, Eye, Edit2, Trash2, Users } from 'lucide-react';
-import { Card, CardContent } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
+import { Card, CardContent } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
 import { Modal } from '../components/ui/Modal';
-import { Input } from '../components/ui/Input';
+import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { EmptyState } from '../components/ui/EmptyState';
 import { formatCurrency } from '../lib/utils';

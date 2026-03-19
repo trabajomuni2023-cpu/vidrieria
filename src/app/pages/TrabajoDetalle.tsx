@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ArrowLeft, User, Phone, MapPin, Calendar, FileText, Edit2, CreditCard } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
 import { Modal } from '../components/ui/Modal';
-import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
+import { Input } from '../components/ui/input';
+import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { toast } from 'sonner';

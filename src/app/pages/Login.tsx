@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Package, Lock, User } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import { login } from '../lib/auth-api';
 import { setAuthSession } from '../lib/auth';
