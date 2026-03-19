@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, Briefcase, DollarSign, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, Briefcase, DollarSign, Download, FileText, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
+import { Input } from '../components/ui/input';
 import { formatCurrency } from '../lib/utils';
 import { getReportes, type ReportesResumen } from '../lib/reportes-api';
 import { toast } from 'sonner';
+import { exportRowsToCsv, printHtmlAsPdf } from '../lib/export';
 import {
   BarChart,
   Bar,
@@ -51,6 +53,8 @@ function formatEstadoLabel(estado: string) {
 
 export default function Reportes() {
   const [periodo, setPeriodo] = useState('mes');
+  const [desde, setDesde] = useState('');
+  const [hasta, setHasta] = useState('');
   const [data, setData] = useState<ReportesResumen>(emptyReport);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -60,7 +64,7 @@ export default function Reportes() {
     async function loadReportes() {
       try {
         setIsLoading(true);
-        const reportes = await getReportes(periodo);
+        const reportes = await getReportes(periodo, periodo === 'personalizado' ? desde : undefined, periodo === 'personalizado' ? hasta : undefined);
 
         if (isMounted) {
           setData(reportes);
@@ -79,7 +83,7 @@ export default function Reportes() {
     return () => {
       isMounted = false;
     };
-  }, [periodo]);
+  }, [periodo, desde, hasta]);
 
   const trabajosPorEstado = useMemo(() => {
     return data.trabajosPorEstado.map((item) => ({
@@ -88,6 +92,67 @@ export default function Reportes() {
       color: estadoColors[item.estado] || '#64748b',
     }));
   }, [data.trabajosPorEstado]);
+
+  function handleClearFilters() {
+    setPeriodo('mes');
+    setDesde('');
+    setHasta('');
+  }
+
+  function handleExportExcel() {
+    exportRowsToCsv(
+      'reporte-resumen.csv',
+      ['Concepto', 'Valor'],
+      [
+        ['Total ingresos', data.totalIngresos],
+        ['Total gastos', data.totalGastos],
+        ['Utilidad neta', data.utilidadNeta],
+        ['Trabajos realizados', data.trabajosRealizados],
+      ],
+    );
+    toast.success('Resumen exportado a Excel.');
+  }
+
+  function handleExportPdf() {
+    const periodLabel = periodo === 'personalizado'
+      ? `Desde ${desde || '-'} hasta ${hasta || '-'}`
+      : periodo;
+
+    const html = `
+      <h1>Reporte de Vidrieria</h1>
+      <p class="muted">Periodo: ${periodLabel}</p>
+      <div class="grid">
+        <div class="card"><strong>Total ingresos</strong><p>${formatCurrency(data.totalIngresos)}</p></div>
+        <div class="card"><strong>Total gastos</strong><p>${formatCurrency(data.totalGastos)}</p></div>
+        <div class="card"><strong>Utilidad neta</strong><p>${formatCurrency(data.utilidadNeta)}</p></div>
+        <div class="card"><strong>Trabajos realizados</strong><p>${data.trabajosRealizados}</p></div>
+      </div>
+      <h2>Trabajos por estado</h2>
+      <table>
+        <thead><tr><th>Estado</th><th>Cantidad</th></tr></thead>
+        <tbody>
+          ${trabajosPorEstado.map((item) => `<tr><td>${item.label}</td><td>${item.cantidad}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <h2>Clientes con saldo</h2>
+      <table>
+        <thead><tr><th>Cliente</th><th>Saldo</th></tr></thead>
+        <tbody>
+          ${data.clientesConSaldo.map((item) => `<tr><td>${item.cliente}</td><td>${formatCurrency(item.saldo)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <h2>Productos mas usados</h2>
+      <table>
+        <thead><tr><th>Producto</th><th>Cantidad</th></tr></thead>
+        <tbody>
+          ${data.productosUsados.map((item) => `<tr><td>${item.producto}</td><td>${item.cantidad}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+
+    printHtmlAsPdf('reporte-vidrieria', html);
+    toast.success('Vista lista para guardar como PDF.');
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -105,11 +170,26 @@ export default function Reportes() {
               { value: 'semana', label: 'Esta semana' },
               { value: 'mes', label: 'Este mes' },
               { value: 'anio', label: 'Este ano' },
+              { value: 'personalizado', label: 'Rango personalizado' },
             ]}
           />
-          <Button variant="outline" onClick={() => toast.info('La exportacion se implementara luego.')}>
+          {periodo === 'personalizado' ? (
+            <>
+              <Input type="date" value={desde} onChange={(event) => setDesde(event.target.value)} />
+              <Input type="date" value={hasta} onChange={(event) => setHasta(event.target.value)} />
+            </>
+          ) : null}
+          <Button variant="outline" onClick={handleClearFilters}>
+            <RotateCcw className="w-4 h-4" />
+            Limpiar
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel}>
             <Download className="w-4 h-4" />
-            Exportar
+            Excel
+          </Button>
+          <Button variant="outline" onClick={handleExportPdf}>
+            <FileText className="w-4 h-4" />
+            PDF
           </Button>
         </div>
       </div>

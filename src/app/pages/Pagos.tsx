@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Plus, CreditCard, TrendingUp } from 'lucide-react';
+import { Search, Plus, CreditCard, TrendingUp, Download, RotateCcw } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -10,6 +10,7 @@ import { formatCurrency, formatDate } from '../lib/utils';
 import { toast } from 'sonner';
 import { createPago, getPagos, type Pago } from '../lib/pagos-api';
 import { getTrabajos, type Trabajo } from '../lib/trabajos-api';
+import { exportRowsToCsv } from '../lib/export';
 
 function formatEnumLabel(value: string) {
   return value
@@ -24,6 +25,9 @@ export default function Pagos() {
   const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroMetodo, setFiltroMetodo] = useState<string>('todos');
+  const [filtroTipo, setFiltroTipo] = useState<string>('todos');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -57,20 +61,18 @@ export default function Pagos() {
           pago.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
           pago.trabajo.toLowerCase().includes(searchTerm.toLowerCase());
         const matchMetodo = filtroMetodo === 'todos' || pago.metodo === filtroMetodo;
-        return matchSearch && matchMetodo;
+        const matchTipo = filtroTipo === 'todos' || pago.tipo === filtroTipo;
+        const pagoDate = new Date(pago.fecha);
+        const matchDesde = !fechaDesde || pagoDate >= new Date(`${fechaDesde}T00:00:00`);
+        const matchHasta = !fechaHasta || pagoDate <= new Date(`${fechaHasta}T23:59:59`);
+        return matchSearch && matchMetodo && matchTipo && matchDesde && matchHasta;
       }),
-    [pagos, searchTerm, filtroMetodo],
+    [pagos, searchTerm, filtroMetodo, filtroTipo, fechaDesde, fechaHasta],
   );
 
-  const hoy = new Date().toISOString().split('T')[0];
-  const inicioSemana = new Date();
-  inicioSemana.setDate(inicioSemana.getDate() - 7);
-  const inicioMes = new Date();
-  inicioMes.setDate(1);
-
-  const totalHoy = pagos.filter((pago) => pago.fecha.startsWith(hoy)).reduce((sum, pago) => sum + pago.monto, 0);
-  const totalSemana = pagos.filter((pago) => new Date(pago.fecha) >= inicioSemana).reduce((sum, pago) => sum + pago.monto, 0);
-  const totalMes = pagos.filter((pago) => new Date(pago.fecha) >= inicioMes).reduce((sum, pago) => sum + pago.monto, 0);
+  const totalRango = filteredPagos.reduce((sum, pago) => sum + pago.monto, 0);
+  const adelantos = filteredPagos.filter((pago) => pago.tipo === 'ADELANTO').reduce((sum, pago) => sum + pago.monto, 0);
+  const finales = filteredPagos.filter((pago) => pago.tipo === 'FINAL').reduce((sum, pago) => sum + pago.monto, 0);
 
   const trabajoOptions = [
     { value: '', label: 'Seleccionar trabajo' },
@@ -102,6 +104,30 @@ export default function Pagos() {
     void submit();
   };
 
+  function handleClearFilters() {
+    setSearchTerm('');
+    setFiltroMetodo('todos');
+    setFiltroTipo('todos');
+    setFechaDesde('');
+    setFechaHasta('');
+  }
+
+  function handleExportExcel() {
+    exportRowsToCsv(
+      'pagos-filtrados.csv',
+      ['Fecha', 'Cliente', 'Trabajo', 'Monto', 'Metodo', 'Tipo'],
+      filteredPagos.map((pago) => [
+        formatDate(pago.fecha),
+        pago.cliente,
+        pago.trabajo,
+        pago.monto,
+        pago.metodo,
+        pago.tipo,
+      ]),
+    );
+    toast.success('Pagos exportados correctamente.');
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -109,16 +135,22 @@ export default function Pagos() {
           <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
           <p className="text-sm text-gray-600 mt-1">Registro de pagos recibidos</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <Plus className="w-4 h-4" />
-          Registrar Pago
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredPagos.length === 0}>
+            <Download className="w-4 h-4" />
+            Exportar Excel
+          </Button>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus className="w-4 h-4" />
+            Registrar Pago
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total hoy</p><p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalHoy)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><TrendingUp className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total semana</p><p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalSemana)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><CreditCard className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total mes</p><p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalMes)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><CreditCard className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total cobrado</p><p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalRango)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><TrendingUp className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Adelantos</p><p className="text-2xl font-bold text-blue-600 mt-1">{formatCurrency(adelantos)}</p></div><div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><CreditCard className="w-6 h-6 text-blue-600" /></div></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Pagos finales</p><p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(finales)}</p></div><div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center"><CreditCard className="w-6 h-6 text-emerald-600" /></div></div></CardContent></Card>
       </div>
 
       <Card>
@@ -134,6 +166,13 @@ export default function Pagos() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+            <Select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} options={[['todos','Todos'],['ADELANTO','Adelanto'],['PARCIAL','Parcial'],['FINAL','Final']].map(([value,label]) => ({ value, label }))} />
+            <Input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} className="w-full sm:w-auto" />
+            <Input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} className="w-full sm:w-auto" />
+            <Button type="button" variant="outline" onClick={handleClearFilters}>
+              <RotateCcw className="w-4 h-4" />
+              Limpiar
+            </Button>
             <div className="flex gap-2">
               {[
                 ['todos', 'Todos'],

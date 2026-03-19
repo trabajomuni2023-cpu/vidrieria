@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Plus, Eye, Edit2, Briefcase } from 'lucide-react';
+import { Search, Plus, Eye, Edit2, Briefcase, Download, RotateCcw } from 'lucide-react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -13,6 +13,7 @@ import { Link } from 'react-router';
 import { toast } from 'sonner';
 import { getClientes, type Cliente } from '../lib/clientes-api';
 import { createTrabajo, getTrabajos, updateTrabajo, type Trabajo, type TrabajoPayload } from '../lib/trabajos-api';
+import { exportRowsToCsv } from '../lib/export';
 
 function getEstadoBadge(estado: string) {
   const estados: Record<string, { label: string; variant: 'success' | 'warning' | 'info' | 'danger' | 'default' }> = {
@@ -45,6 +46,8 @@ export default function Trabajos() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroEstado, setFiltroEstado] = useState<string>('todos');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -84,17 +87,21 @@ export default function Trabajos() {
       trabajo.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (trabajo.boleta || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchEstado = filtroEstado === 'todos' || trabajo.estado === filtroEstado;
+    const trabajoDate = new Date(trabajo.fecha);
+    const matchDesde = !fechaDesde || trabajoDate >= new Date(`${fechaDesde}T00:00:00`);
+    const matchHasta = !fechaHasta || trabajoDate <= new Date(`${fechaHasta}T23:59:59`);
 
-    return matchSearch && matchEstado;
+    return matchSearch && matchEstado && matchDesde && matchHasta;
   });
 
   const stats = {
-    total: trabajos.length,
-    pendientes: trabajos.filter((trabajo) => trabajo.estado === 'PENDIENTE').length,
-    enProceso: trabajos.filter((trabajo) => trabajo.estado === 'EN_PROCESO').length,
-    terminados: trabajos.filter((trabajo) => trabajo.estado === 'TERMINADO').length,
-    entregados: trabajos.filter((trabajo) => trabajo.estado === 'ENTREGADO').length,
-    totalSaldo: trabajos.reduce((sum, trabajo) => sum + trabajo.saldo, 0),
+    total: filteredTrabajos.length,
+    pendientes: filteredTrabajos.filter((trabajo) => trabajo.estado === 'PENDIENTE').length,
+    enProceso: filteredTrabajos.filter((trabajo) => trabajo.estado === 'EN_PROCESO').length,
+    terminados: filteredTrabajos.filter((trabajo) => trabajo.estado === 'TERMINADO').length,
+    entregados: filteredTrabajos.filter((trabajo) => trabajo.estado === 'ENTREGADO').length,
+    totalSaldo: filteredTrabajos.reduce((sum, trabajo) => sum + trabajo.saldo, 0),
+    totalMonto: filteredTrabajos.reduce((sum, trabajo) => sum + trabajo.total, 0),
   };
 
   function updateForm<K extends keyof TrabajoPayload>(key: K, value: TrabajoPayload[K]) {
@@ -163,6 +170,32 @@ export default function Trabajos() {
     }
   }
 
+  function handleClearFilters() {
+    setSearchTerm('');
+    setFiltroEstado('todos');
+    setFechaDesde('');
+    setFechaHasta('');
+  }
+
+  function handleExportExcel() {
+    exportRowsToCsv(
+      'trabajos-filtrados.csv',
+      ['Fecha', 'Cliente', 'Descripcion', 'Total', 'Adelanto', 'Saldo', 'Estado', 'Boleta', 'Fecha entrega'],
+      filteredTrabajos.map((trabajo) => [
+        formatDate(trabajo.fecha),
+        trabajo.cliente,
+        trabajo.descripcion,
+        trabajo.total,
+        trabajo.adelanto,
+        trabajo.saldo,
+        trabajo.estado,
+        trabajo.boleta || '',
+        trabajo.fechaEntrega ? formatDate(trabajo.fechaEntrega) : '',
+      ]),
+    );
+    toast.success('Trabajos exportados correctamente.');
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -170,10 +203,16 @@ export default function Trabajos() {
           <h1 className="text-2xl font-bold text-gray-900">Trabajos</h1>
           <p className="text-sm text-gray-600 mt-1">Gestiona pedidos y trabajos en proceso</p>
         </div>
-        <Button onClick={() => handleOpenModal()} disabled={clientes.length === 0 && !isLoading}>
-          <Plus className="w-4 h-4" />
-          Nuevo Trabajo
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredTrabajos.length === 0}>
+            <Download className="w-4 h-4" />
+            Exportar Excel
+          </Button>
+          <Button onClick={() => handleOpenModal()} disabled={clientes.length === 0 && !isLoading}>
+            <Plus className="w-4 h-4" />
+            Nuevo Trabajo
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -198,6 +237,12 @@ export default function Trabajos() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+            <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full lg:w-auto" />
+            <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full lg:w-auto" />
+            <Button type="button" variant="outline" onClick={handleClearFilters}>
+              <RotateCcw className="w-4 h-4" />
+              Limpiar
+            </Button>
             <div className="flex gap-2 flex-wrap">
               {[['todos', 'Todos'], ['PENDIENTE', 'Pendientes'], ['EN_PROCESO', 'En proceso'], ['TERMINADO', 'Terminados'], ['ENTREGADO', 'Entregados']].map(([value, label]) => (
                 <button key={value} onClick={() => setFiltroEstado(value)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filtroEstado === value ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
@@ -205,6 +250,18 @@ export default function Trabajos() {
                 </button>
               ))}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div><p className="text-xs text-gray-500">Trabajos en rango</p><p className="text-lg font-semibold text-gray-900">{stats.total}</p></div>
+            <div><p className="text-xs text-gray-500">Monto total</p><p className="text-lg font-semibold text-blue-600">{formatCurrency(stats.totalMonto)}</p></div>
+            <div><p className="text-xs text-gray-500">Pendientes</p><p className="text-lg font-semibold text-amber-600">{stats.pendientes}</p></div>
+            <div><p className="text-xs text-gray-500">Terminados</p><p className="text-lg font-semibold text-green-600">{stats.terminados}</p></div>
+            <div><p className="text-xs text-gray-500">Entregados</p><p className="text-lg font-semibold text-green-700">{stats.entregados}</p></div>
           </div>
         </CardContent>
       </Card>

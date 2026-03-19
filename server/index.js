@@ -435,6 +435,19 @@ function getPeriodStart(periodo) {
   }
 }
 
+function getDateRange(periodo, desde, hasta) {
+  if (periodo === 'personalizado') {
+    const start = desde ? new Date(`${desde}T00:00:00`) : null;
+    const end = hasta ? new Date(`${hasta}T23:59:59`) : null;
+    return { start, end };
+  }
+
+  return {
+    start: getPeriodStart(periodo),
+    end: null,
+  };
+}
+
 function createSeriesBuckets(periodo) {
   const now = new Date();
 
@@ -494,6 +507,32 @@ function createSeriesBuckets(periodo) {
       gastos: 0,
     };
   });
+}
+
+function createCustomSeriesBuckets(startDate, endDate) {
+  if (!startDate || !endDate) {
+    return [];
+  }
+
+  const buckets = [];
+  const current = getStartOfDay(startDate);
+  const last = getStartOfDay(endDate);
+
+  while (current <= last) {
+    buckets.push({
+      key: current.toISOString().slice(0, 10),
+      label: current.toLocaleDateString('es-PE', {
+        day: '2-digit',
+        month: 'short',
+      }),
+      ingresos: 0,
+      gastos: 0,
+    });
+
+    current.setDate(current.getDate() + 1);
+  }
+
+  return buckets;
 }
 
 function getBucketKey(dateValue, periodo) {
@@ -2176,16 +2215,22 @@ app.get('/api/caja/movimientos', async (_req, res) => {
 app.get('/api/reportes', async (req, res) => {
   try {
     const periodo = String(req.query.periodo || 'mes');
-    const startDate = getPeriodStart(periodo);
-    const series = createSeriesBuckets(periodo);
+    const desde = req.query.desde ? String(req.query.desde) : '';
+    const hasta = req.query.hasta ? String(req.query.hasta) : '';
+    const { start: startDate, end: endDate } = getDateRange(periodo, desde, hasta);
+    const whereFecha = {
+      ...(startDate ? { gte: startDate } : {}),
+      ...(endDate ? { lte: endDate } : {}),
+    };
+    const series = periodo === 'personalizado'
+      ? createCustomSeriesBuckets(startDate, endDate)
+      : createSeriesBuckets(periodo);
     const seriesMap = new Map(series.map((item) => [item.key, item]));
 
     const [movimientos, trabajos, clientes, materiales] = await Promise.all([
       prisma.movimientoCaja.findMany({
         where: {
-          fecha: {
-            gte: startDate,
-          },
+          fecha: whereFecha,
         },
         orderBy: {
           fecha: 'asc',
@@ -2193,9 +2238,7 @@ app.get('/api/reportes', async (req, res) => {
       }),
       prisma.trabajo.findMany({
         where: {
-          fechaRegistro: {
-            gte: startDate,
-          },
+          fechaRegistro: whereFecha,
         },
         select: {
           id: true,
@@ -2215,7 +2258,7 @@ app.get('/api/reportes', async (req, res) => {
         where: {
           trabajo: {
             fechaRegistro: {
-              gte: startDate,
+              ...whereFecha,
             },
           },
         },
@@ -2233,7 +2276,7 @@ app.get('/api/reportes', async (req, res) => {
     let totalGastos = 0;
 
     for (const movimiento of movimientos) {
-      const bucket = seriesMap.get(getBucketKey(movimiento.fecha, periodo));
+      const bucket = seriesMap.get(getBucketKey(movimiento.fecha, periodo === 'personalizado' ? 'dia' : periodo));
 
       if (!bucket) {
         continue;
