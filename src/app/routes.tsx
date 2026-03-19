@@ -1,11 +1,9 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import ClienteDetalle from './pages/ClienteDetalle';
-import Cotizaciones from './pages/Cotizaciones';
-import CotizacionDetalle from './pages/CotizacionDetalle';
 import Trabajos from './pages/Trabajos';
 import TrabajoDetalle from './pages/TrabajoDetalle';
 import Pagos from './pages/Pagos';
@@ -37,8 +35,8 @@ export const router = createBrowserRouter([
           { index: true, Component: Dashboard },
           { path: 'clientes', Component: Clientes },
           { path: 'clientes/:id', Component: ClienteDetalle },
-          { path: 'cotizaciones', Component: Cotizaciones },
-          { path: 'cotizaciones/:id', Component: CotizacionDetalle },
+          { path: 'cotizaciones', element: <Navigate to="/dashboard/trabajos" replace /> },
+          { path: 'cotizaciones/:id', element: <Navigate to="/dashboard/trabajos" replace /> },
           { path: 'trabajos', Component: Trabajos },
           { path: 'trabajos/:id', Component: TrabajoDetalle },
           { path: 'pagos', Component: Pagos },
