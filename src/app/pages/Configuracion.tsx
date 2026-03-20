@@ -148,7 +148,12 @@ export default function Configuracion() {
         moneda: datosNegocio.moneda,
         logoUrl: datosNegocio.logoUrl,
         stockMinimoPorDefecto: datosNegocio.stockMinimoPorDefecto,
+        contentPalette,
+        sidebarPalette,
+        contentCustomColor: contentPalette === 'personalizado' ? contentCustomColor : '',
+        sidebarCustomColor: sidebarPalette === 'personalizado' ? sidebarCustomColor : '',
       });
+      applyCurrentTheme(contentPalette, sidebarPalette, contentCustomColor, sidebarCustomColor);
       toast.success('Datos del negocio actualizados');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo actualizar la configuración.');
