@@ -19,6 +19,13 @@ export type ThemePreferences = {
   sidebarPaletteId: ThemePaletteId;
 };
 
+export type ThemePreset = {
+  id: string;
+  name: string;
+  description: string;
+  preferences: ThemePreferences;
+};
+
 export const themePalettes: ThemePalette[] = [
   {
     id: 'oceano',
@@ -71,6 +78,36 @@ export const themePalettes: ThemePalette[] = [
     heroFrom: '#0f172a',
     heroVia: '#1e293b',
     heroTo: '#334155',
+  },
+];
+
+export const themePresets: ThemePreset[] = [
+  {
+    id: 'suave',
+    name: 'Suave',
+    description: 'Menu sobrio y vista principal fresca para descansar la vista.',
+    preferences: {
+      sidebarPaletteId: 'grafito',
+      contentPaletteId: 'esmeralda',
+    },
+  },
+  {
+    id: 'elegante',
+    name: 'Elegante',
+    description: 'Una combinacion seria y limpia para presentacion formal.',
+    preferences: {
+      sidebarPaletteId: 'grafito',
+      contentPaletteId: 'oceano',
+    },
+  },
+  {
+    id: 'comercial',
+    name: 'Comercial',
+    description: 'Mas calida y llamativa para mostrar energia de marca.',
+    preferences: {
+      sidebarPaletteId: 'terracota',
+      contentPaletteId: 'oceano',
+    },
   },
 ];
 

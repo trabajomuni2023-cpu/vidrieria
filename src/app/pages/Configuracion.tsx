@@ -19,8 +19,10 @@ import {
 import { getAuthSession } from '../lib/auth';
 import {
   applyContentPalette,
+  applyThemePreferences,
   applySidebarPalette,
   getStoredThemePreferences,
+  themePresets,
   themePalettes,
   type ThemePaletteId,
 } from '../lib/theme-preferences';
@@ -238,6 +240,19 @@ export default function Configuracion() {
     toast.success('Color del menu lateral actualizado');
   }
 
+  function handleApplyPreset(presetId: string) {
+    const preset = themePresets.find((item) => item.id === presetId);
+
+    if (!preset) {
+      return;
+    }
+
+    setContentPalette(preset.preferences.contentPaletteId);
+    setSidebarPalette(preset.preferences.sidebarPaletteId);
+    applyThemePreferences(preset.preferences);
+    toast.success(`Combinacion "${preset.name}" aplicada`);
+  }
+
   return (
     <div className="p-6 space-y-6 max-w-5xl">
       <div>
@@ -304,6 +319,45 @@ export default function Configuracion() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900">Combinaciones recomendadas</h3>
+            <p className="mt-1 text-sm text-gray-600">Aplican un estilo equilibrado en un solo clic y luego puedes ajustar cada zona por separado.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {themePresets.map((preset) => {
+              const contentTheme = themePalettes.find((palette) => palette.id === preset.preferences.contentPaletteId);
+              const sidebarTheme = themePalettes.find((palette) => palette.id === preset.preferences.sidebarPaletteId);
+
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => handleApplyPreset(preset.id)}
+                  className="rounded-2xl border border-gray-200 p-4 text-left transition hover:border-gray-300 hover:shadow-sm"
+                >
+                  <div className="mb-4 flex overflow-hidden rounded-xl border border-gray-200">
+                    <div
+                      className="h-20 w-1/3"
+                      style={{
+                        backgroundImage: `linear-gradient(180deg, ${sidebarTheme?.heroFrom}, ${sidebarTheme?.heroVia})`,
+                      }}
+                    />
+                    <div
+                      className="h-20 flex-1"
+                      style={{
+                        backgroundImage: `linear-gradient(135deg, ${contentTheme?.heroFrom}, ${contentTheme?.heroVia}, ${contentTheme?.heroTo})`,
+                      }}
+                    />
+                  </div>
+                  <p className="font-semibold text-gray-900">{preset.name}</p>
+                  <p className="mt-1 text-sm text-gray-600">{preset.description}</p>
+                  <p className="mt-3 text-xs uppercase tracking-[0.18em] text-gray-500">
+                    Menu {sidebarTheme?.name} · Vista {contentTheme?.name}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
           <div>
             <h3 className="text-base font-semibold text-gray-900">Vista principal</h3>
             <p className="mt-1 text-sm text-gray-600">Afecta dashboard, reportes, botones y paneles principales.</p>
