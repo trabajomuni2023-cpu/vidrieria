@@ -7,6 +7,8 @@ export interface ConfiguracionNegocio {
   stockMinimoPorDefecto: number;
   contentPalette: string;
   sidebarPalette: string;
+  contentCustomColor?: string | null;
+  sidebarCustomColor?: string | null;
 }
 
 export interface UsuarioSistema {
@@ -50,6 +52,8 @@ export async function updateConfiguracion(payload: {
   stockMinimoPorDefecto: string;
   contentPalette?: string;
   sidebarPalette?: string;
+  contentCustomColor?: string;
+  sidebarCustomColor?: string;
 }) {
   const response = await fetch('/api/configuracion', {
     method: 'PUT',

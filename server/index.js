@@ -124,6 +124,8 @@ async function ensureConfiguracionNegocio() {
       moneda: 'PEN',
       contentPalette: 'oceano',
       sidebarPalette: 'grafito',
+      contentCustomColor: null,
+      sidebarCustomColor: null,
       stockMinimoPorDefecto: 5,
     },
   });
@@ -1049,7 +1051,15 @@ app.put('/api/configuracion', async (req, res) => {
     }
 
     const current = await ensureConfiguracionNegocio();
-    const { nombreComercial, moneda, stockMinimoPorDefecto, contentPalette, sidebarPalette } = req.body ?? {};
+    const {
+      nombreComercial,
+      moneda,
+      stockMinimoPorDefecto,
+      contentPalette,
+      sidebarPalette,
+      contentCustomColor,
+      sidebarCustomColor,
+    } = req.body ?? {};
 
     if (!nombreComercial) {
       return res.status(400).json({ message: 'El nombre comercial es obligatorio.' });
@@ -1062,6 +1072,8 @@ app.put('/api/configuracion', async (req, res) => {
         moneda: moneda || 'PEN',
         contentPalette: contentPalette || current.contentPalette || 'oceano',
         sidebarPalette: sidebarPalette || current.sidebarPalette || 'grafito',
+        contentCustomColor: contentCustomColor ? String(contentCustomColor).trim() : null,
+        sidebarCustomColor: sidebarCustomColor ? String(sidebarCustomColor).trim() : null,
         stockMinimoPorDefecto: Number(stockMinimoPorDefecto || 5),
       },
     });

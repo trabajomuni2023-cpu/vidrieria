@@ -54,6 +54,9 @@ const defaultUserForm = {
   activo: true,
 };
 
+const defaultContentCustomColor = '#2563eb';
+const defaultSidebarCustomColor = '#1e293b';
+
 export default function Configuracion() {
   const [datosNegocio, setDatosNegocio] = useState(defaultNegocio);
   const [datosUsuario, setDatosUsuario] = useState(defaultUsuario);
@@ -70,6 +73,8 @@ export default function Configuracion() {
   const storedTheme = getStoredThemePreferences();
   const [contentPalette, setContentPalette] = useState<ThemePaletteId>(storedTheme.contentPaletteId);
   const [sidebarPalette, setSidebarPalette] = useState<ThemePaletteId>(storedTheme.sidebarPaletteId);
+  const [contentCustomColor, setContentCustomColor] = useState(storedTheme.contentCustomColor || defaultContentCustomColor);
+  const [sidebarCustomColor, setSidebarCustomColor] = useState(storedTheme.sidebarCustomColor || defaultSidebarCustomColor);
 
   const currentSession = getAuthSession();
   const isAdmin = currentSession?.user.rol === 'ADMIN';
@@ -94,19 +99,23 @@ export default function Configuracion() {
           stockMinimoPorDefecto: String(config.negocio.stockMinimoPorDefecto),
         });
 
-        setContentPalette((config.negocio.contentPalette as ThemePaletteId) || storedTheme.contentPaletteId);
-        setSidebarPalette((config.negocio.sidebarPalette as ThemePaletteId) || storedTheme.sidebarPaletteId);
+        const nextTheme = {
+          contentPaletteId: (config.negocio.contentPalette as ThemePaletteId) || storedTheme.contentPaletteId,
+          sidebarPaletteId: (config.negocio.sidebarPalette as ThemePaletteId) || storedTheme.sidebarPaletteId,
+          contentCustomColor: config.negocio.contentCustomColor || storedTheme.contentCustomColor || defaultContentCustomColor,
+          sidebarCustomColor: config.negocio.sidebarCustomColor || storedTheme.sidebarCustomColor || defaultSidebarCustomColor,
+        };
+
+        setContentPalette(nextTheme.contentPaletteId);
+        setSidebarPalette(nextTheme.sidebarPaletteId);
+        setContentCustomColor(nextTheme.contentCustomColor);
+        setSidebarCustomColor(nextTheme.sidebarCustomColor);
 
         setDatosUsuario({
           nombre: config.user.nombre,
           email: config.user.email,
           telefono: config.user.telefono || '',
         });
-
-        const nextTheme = {
-          contentPaletteId: (config.negocio.contentPalette as ThemePaletteId) || storedTheme.contentPaletteId,
-          sidebarPaletteId: (config.negocio.sidebarPalette as ThemePaletteId) || storedTheme.sidebarPaletteId,
-        };
 
         applyThemePreferences(nextTheme);
         setUsuarios(usuariosData);
@@ -135,8 +144,10 @@ export default function Configuracion() {
         ...datosNegocio,
         contentPalette,
         sidebarPalette,
+        contentCustomColor: contentPalette === 'personalizado' ? contentCustomColor : '',
+        sidebarCustomColor: sidebarPalette === 'personalizado' ? sidebarCustomColor : '',
       });
-      toast.success('Datos del negocio actualizados');
+      toast.success('Configuración visual y datos del negocio actualizados');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo actualizar el negocio.');
     } finally {
@@ -241,16 +252,39 @@ export default function Configuracion() {
     }
   }
 
+  function applyCurrentTheme(nextContentPalette: ThemePaletteId, nextSidebarPalette: ThemePaletteId, nextContentCustomColor: string, nextSidebarCustomColor: string) {
+    applyThemePreferences({
+      contentPaletteId: nextContentPalette,
+      sidebarPaletteId: nextSidebarPalette,
+      contentCustomColor: nextContentCustomColor,
+      sidebarCustomColor: nextSidebarCustomColor,
+    });
+  }
+
   function handleContentPaletteChange(paletteId: ThemePaletteId) {
     setContentPalette(paletteId);
-    applyContentPalette(paletteId);
-    toast.success('Color de la vista principal actualizado');
+    applyContentPalette(paletteId, contentCustomColor);
+    toast.success(paletteId === 'personalizado' ? 'Modo personalizado activado para la vista principal' : 'Color de la vista principal actualizado');
   }
 
   function handleSidebarPaletteChange(paletteId: ThemePaletteId) {
     setSidebarPalette(paletteId);
-    applySidebarPalette(paletteId);
-    toast.success('Color del menú lateral actualizado');
+    applySidebarPalette(paletteId, sidebarCustomColor);
+    toast.success(paletteId === 'personalizado' ? 'Modo personalizado activado para el menú lateral' : 'Color del menú lateral actualizado');
+  }
+
+  function handleContentCustomColorChange(color: string) {
+    setContentCustomColor(color);
+    if (contentPalette === 'personalizado') {
+      applyCurrentTheme(contentPalette, sidebarPalette, color, sidebarCustomColor);
+    }
+  }
+
+  function handleSidebarCustomColorChange(color: string) {
+    setSidebarCustomColor(color);
+    if (sidebarPalette === 'personalizado') {
+      applyCurrentTheme(contentPalette, sidebarPalette, contentCustomColor, color);
+    }
   }
 
   function handleApplyPreset(presetId: string) {
@@ -262,22 +296,27 @@ export default function Configuracion() {
 
     setContentPalette(preset.preferences.contentPaletteId);
     setSidebarPalette(preset.preferences.sidebarPaletteId);
-    applyThemePreferences(preset.preferences);
-    toast.success(`Combinacion "${preset.name}" aplicada`);
+    applyCurrentTheme(
+      preset.preferences.contentPaletteId,
+      preset.preferences.sidebarPaletteId,
+      contentCustomColor,
+      sidebarCustomColor,
+    );
+    toast.success(`Combinación "${preset.name}" aplicada`);
   }
 
   return (
     <div className="p-6 space-y-6 max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
-        <p className="text-sm text-gray-600 mt-1">Administra la configuración del sistema y los usuarios</p>
+        <p className="mt-1 text-sm text-gray-600">Administra la configuración del sistema y los usuarios.</p>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Building className="w-5 h-5 text-blue-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+              <Building className="h-5 w-5 text-blue-600" />
             </div>
             <CardTitle>Datos del negocio</CardTitle>
           </div>
@@ -302,7 +341,8 @@ export default function Configuracion() {
             />
 
             <Input
-              label="Stock minimo por defecto"
+              label="Stock mínimo por defecto"
+              helperText="Se usará como referencia inicial al crear nuevos productos."
               type="number"
               value={datosNegocio.stockMinimoPorDefecto}
               onChange={(e) => setDatosNegocio({ ...datosNegocio, stockMinimoPorDefecto: e.target.value })}
@@ -322,16 +362,16 @@ export default function Configuracion() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[var(--brand-100)]">
-              <Palette className="w-5 h-5 text-[var(--brand-600)]" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--brand-100)]">
+              <Palette className="h-5 w-5 text-[var(--brand-600)]" />
             </div>
             <div>
               <CardTitle>Colores del sistema</CardTitle>
-              <p className="text-sm text-gray-600">Puedes usar un color distinto para el menú lateral y otro para la vista principal.</p>
+              <p className="text-sm text-gray-600">Puedes usar paletas listas o definir tus propios colores para la vista principal y el menú lateral.</p>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div>
             <h3 className="text-base font-semibold text-gray-900">Combinaciones recomendadas</h3>
             <p className="mt-1 text-sm text-gray-600">Aplican un estilo equilibrado en un solo clic y luego puedes ajustar cada zona por separado.</p>
@@ -351,15 +391,11 @@ export default function Configuracion() {
                   <div className="mb-4 flex overflow-hidden rounded-xl border border-gray-200">
                     <div
                       className="h-20 w-1/3"
-                      style={{
-                        backgroundImage: `linear-gradient(180deg, ${sidebarTheme?.heroFrom}, ${sidebarTheme?.heroVia})`,
-                      }}
+                      style={{ backgroundImage: `linear-gradient(180deg, ${sidebarTheme?.heroFrom}, ${sidebarTheme?.heroVia})` }}
                     />
                     <div
                       className="h-20 flex-1"
-                      style={{
-                        backgroundImage: `linear-gradient(135deg, ${contentTheme?.heroFrom}, ${contentTheme?.heroVia}, ${contentTheme?.heroTo})`,
-                      }}
+                      style={{ backgroundImage: `linear-gradient(135deg, ${contentTheme?.heroFrom}, ${contentTheme?.heroVia}, ${contentTheme?.heroTo})` }}
                     />
                   </div>
                   <p className="font-semibold text-gray-900">{preset.name}</p>
@@ -371,6 +407,7 @@ export default function Configuracion() {
               );
             })}
           </div>
+
           <div>
             <h3 className="text-base font-semibold text-gray-900">Vista principal</h3>
             <p className="mt-1 text-sm text-gray-600">Afecta dashboard, reportes, botones y paneles principales.</p>
@@ -384,16 +421,9 @@ export default function Configuracion() {
                   key={`content-${palette.id}`}
                   type="button"
                   onClick={() => handleContentPaletteChange(palette.id)}
-                  className={`rounded-2xl border p-4 text-left transition ${
-                    isActive ? 'border-gray-900 shadow-md' : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`rounded-2xl border p-4 text-left transition ${isActive ? 'border-gray-900 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
                 >
-                  <div
-                    className="mb-4 h-24 rounded-xl"
-                    style={{
-                      backgroundImage: `linear-gradient(135deg, ${palette.heroFrom}, ${palette.heroVia}, ${palette.heroTo})`,
-                    }}
-                  />
+                  <div className="mb-4 h-24 rounded-xl" style={{ backgroundImage: `linear-gradient(135deg, ${palette.heroFrom}, ${palette.heroVia}, ${palette.heroTo})` }} />
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold text-gray-900">{palette.name}</p>
@@ -412,10 +442,36 @@ export default function Configuracion() {
                 </button>
               );
             })}
+
+            <button
+              type="button"
+              onClick={() => handleContentPaletteChange('personalizado')}
+              className={`rounded-2xl border p-4 text-left transition ${contentPalette === 'personalizado' ? 'border-gray-900 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
+            >
+              <div className="mb-4 h-24 rounded-xl" style={{ backgroundImage: `linear-gradient(135deg, ${contentCustomColor}, color-mix(in srgb, ${contentCustomColor} 70%, #0f172a), color-mix(in srgb, ${contentCustomColor} 75%, #ffffff))` }} />
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-gray-900">Personalizada</p>
+                  <p className="mt-1 text-sm text-gray-600">Usa el color propio del negocio para la zona principal.</p>
+                </div>
+                <Input
+                  type="color"
+                  value={contentCustomColor}
+                  onClick={(event) => event.stopPropagation()}
+                  onChange={(event) => handleContentCustomColorChange(event.target.value)}
+                  className="h-12 w-16 cursor-pointer p-1"
+                />
+              </div>
+              <div className="mt-4 flex items-center justify-between text-sm">
+                <span className="text-gray-500">{contentPalette === 'personalizado' ? 'Color activo' : 'Usar color propio'}</span>
+                {contentPalette === 'personalizado' ? <span className="font-medium text-[var(--brand-600)]">{contentCustomColor}</span> : null}
+              </div>
+            </button>
           </div>
+
           <div className="border-t border-gray-200 pt-4">
             <h3 className="text-base font-semibold text-gray-900">Menú lateral</h3>
-            <p className="mt-1 text-sm text-gray-600">Ideal para dejarlo mas sobrio y que descanse mejor la vista.</p>
+            <p className="mt-1 text-sm text-gray-600">Ideal para dejarlo más sobrio y que descanse mejor la vista.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {themePalettes.map((palette) => {
@@ -426,16 +482,9 @@ export default function Configuracion() {
                   key={`sidebar-${palette.id}`}
                   type="button"
                   onClick={() => handleSidebarPaletteChange(palette.id)}
-                  className={`rounded-2xl border p-4 text-left transition ${
-                    isActive ? 'border-gray-900 shadow-md' : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`rounded-2xl border p-4 text-left transition ${isActive ? 'border-gray-900 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
                 >
-                  <div
-                    className="mb-4 h-24 rounded-xl"
-                    style={{
-                      backgroundImage: `linear-gradient(180deg, ${palette.heroFrom}, ${palette.heroVia})`,
-                    }}
-                  />
+                  <div className="mb-4 h-24 rounded-xl" style={{ backgroundImage: `linear-gradient(180deg, ${palette.heroFrom}, ${palette.heroVia})` }} />
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold text-gray-900">{palette.name}</p>
@@ -453,9 +502,35 @@ export default function Configuracion() {
                 </button>
               );
             })}
+
+            <button
+              type="button"
+              onClick={() => handleSidebarPaletteChange('personalizado')}
+              className={`rounded-2xl border p-4 text-left transition ${sidebarPalette === 'personalizado' ? 'border-gray-900 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}
+            >
+              <div className="mb-4 h-24 rounded-xl" style={{ backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${sidebarCustomColor} 70%, #020617), color-mix(in srgb, ${sidebarCustomColor} 45%, #020617))` }} />
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-gray-900">Personalizado</p>
+                  <p className="mt-1 text-sm text-gray-600">Usa un color propio para el menú lateral sin cansar demasiado la vista.</p>
+                </div>
+                <Input
+                  type="color"
+                  value={sidebarCustomColor}
+                  onClick={(event) => event.stopPropagation()}
+                  onChange={(event) => handleSidebarCustomColorChange(event.target.value)}
+                  className="h-12 w-16 cursor-pointer p-1"
+                />
+              </div>
+              <div className="mt-4 flex items-center justify-between text-sm">
+                <span className="text-gray-500">{sidebarPalette === 'personalizado' ? 'Color activo' : 'Usar color propio'}</span>
+                {sidebarPalette === 'personalizado' ? <span className="font-medium text-gray-900">{sidebarCustomColor}</span> : null}
+              </div>
+            </button>
           </div>
+
           <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-            Estos colores ya forman parte de la configuración del negocio. Cuando guardes cambios, quedarán listos como preferencia general para todos.
+            Estos colores forman parte de la configuración del negocio. Cuando guardes cambios, quedarán listos como preferencia general para todos.
           </div>
         </CardContent>
       </Card>
@@ -463,32 +538,17 @@ export default function Configuracion() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <User className="w-5 h-5 text-purple-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100">
+              <User className="h-5 w-5 text-purple-600" />
             </div>
             <CardTitle>Mi perfil</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleGuardarUsuario} className="space-y-4">
-            <Input
-              label="Nombre completo"
-              value={datosUsuario.nombre}
-              onChange={(e) => setDatosUsuario({ ...datosUsuario, nombre: e.target.value })}
-            />
-
-            <Input
-              label="Correo electrónico"
-              type="email"
-              value={datosUsuario.email}
-              onChange={(e) => setDatosUsuario({ ...datosUsuario, email: e.target.value })}
-            />
-
-            <Input
-              label="Teléfono"
-              value={datosUsuario.telefono}
-              onChange={(e) => setDatosUsuario({ ...datosUsuario, telefono: e.target.value })}
-            />
+            <Input label="Nombre completo" value={datosUsuario.nombre} onChange={(e) => setDatosUsuario({ ...datosUsuario, nombre: e.target.value })} />
+            <Input label="Correo electrónico" type="email" value={datosUsuario.email} onChange={(e) => setDatosUsuario({ ...datosUsuario, email: e.target.value })} />
+            <Input label="Teléfono" value={datosUsuario.telefono} onChange={(e) => setDatosUsuario({ ...datosUsuario, telefono: e.target.value })} />
 
             <div className="pt-4">
               <Button type="submit" disabled={isSavingUsuario || isLoading}>
@@ -503,32 +563,17 @@ export default function Configuracion() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-              <KeyRound className="w-5 h-5 text-amber-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
+              <KeyRound className="h-5 w-5 text-amber-600" />
             </div>
             <CardTitle>Cambiar contraseña</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCambiarPassword} className="space-y-4">
-            <Input
-              label="Contraseña actual"
-              type="password"
-              value={passwordForm.currentPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-            />
-            <Input
-              label="Nueva contraseña"
-              type="password"
-              value={passwordForm.newPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-            />
-            <Input
-              label="Confirmar nueva contraseña"
-              type="password"
-              value={passwordForm.confirmPassword}
-              onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-            />
+            <Input label="Contraseña actual" type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })} />
+            <Input label="Nueva contraseña" type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} />
+            <Input label="Confirmar nueva contraseña" type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })} />
             <div className="pt-4">
               <Button type="submit" disabled={isSavingPassword}>
                 <KeyRound className="w-4 h-4" />
@@ -544,8 +589,8 @@ export default function Configuracion() {
           <CardHeader>
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-red-600" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
+                  <Shield className="h-5 w-5 text-red-600" />
                 </div>
                 <CardTitle>Usuarios del sistema</CardTitle>
               </div>
@@ -558,7 +603,7 @@ export default function Configuracion() {
           <CardContent>
             <div className="space-y-2">
               {usuarios.map((usuario) => (
-                <div key={usuario.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={usuario.id} className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
                   <div>
                     <p className="text-sm font-medium text-gray-900">{usuario.nombre}</p>
                     <p className="text-xs text-gray-500">{usuario.email} · {usuario.rol}</p>
@@ -569,9 +614,7 @@ export default function Configuracion() {
                   </Button>
                 </div>
               ))}
-              {!isLoading && usuarios.length === 0 ? (
-                <div className="p-4 text-sm text-gray-500">Todavía no hay usuarios registrados.</div>
-              ) : null}
+              {!isLoading && usuarios.length === 0 ? <div className="p-4 text-sm text-gray-500">Todavía no hay usuarios registrados.</div> : null}
             </div>
           </CardContent>
         </Card>
@@ -580,8 +623,8 @@ export default function Configuracion() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <PackageIcon className="w-5 h-5 text-green-600" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100">
+              <PackageIcon className="h-5 w-5 text-green-600" />
             </div>
             <CardTitle>Notas</CardTitle>
           </div>
@@ -597,9 +640,7 @@ export default function Configuracion() {
           <Input label="Nombre completo" value={userForm.nombre} onChange={(e) => setUserForm({ ...userForm, nombre: e.target.value })} required />
           <Input label="Correo electrónico" type="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} required />
           <Input label="Teléfono" value={userForm.telefono} onChange={(e) => setUserForm({ ...userForm, telefono: e.target.value })} />
-          {!editingSystemUser ? (
-            <Input label="Contraseña inicial" type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required />
-          ) : null}
+          {!editingSystemUser ? <Input label="Contraseña inicial" type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required /> : null}
           <Select
             label="Rol"
             value={userForm.rol}

@@ -48,6 +48,8 @@ export default function Layout() {
         applyThemePreferences({
           contentPaletteId: config.negocio.contentPalette as ThemePaletteId,
           sidebarPaletteId: config.negocio.sidebarPalette as ThemePaletteId,
+          contentCustomColor: config.negocio.contentCustomColor || undefined,
+          sidebarCustomColor: config.negocio.sidebarCustomColor || undefined,
         });
       } catch {
         clearAuthSession();
