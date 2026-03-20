@@ -39,12 +39,20 @@ export default function Layout() {
   const navigate = useNavigate();
   const [notifications] = useState(3);
   const [user, setUser] = useState<AuthUser | null>(() => getAuthSession()?.user || null);
+  const [negocio, setNegocio] = useState<{ nombreComercial: string; logoUrl?: string | null }>({
+    nombreComercial: 'Vidriería',
+    logoUrl: null,
+  });
 
   useEffect(() => {
     const syncUser = async () => {
       try {
         const [response, config] = await Promise.all([getMe(), getConfiguracion()]);
         setUser(response.user);
+        setNegocio({
+          nombreComercial: config.negocio.nombreComercial || 'Vidriería',
+          logoUrl: config.negocio.logoUrl || null,
+        });
         applyThemePreferences({
           contentPaletteId: config.negocio.contentPalette as ThemePaletteId,
           sidebarPaletteId: config.negocio.sidebarPalette as ThemePaletteId,
@@ -83,12 +91,20 @@ export default function Layout() {
       >
         <div className="px-6 py-6" style={{ borderBottom: '1px solid var(--sidebar-border-strong)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[var(--brand-600)] text-[var(--brand-contrast)]">
-              <Package className="w-6 h-6" />
-            </div>
+            {negocio.logoUrl ? (
+              <img
+                src={negocio.logoUrl}
+                alt={negocio.nombreComercial}
+                className="h-10 w-10 rounded-lg border border-white/10 bg-white object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-[var(--brand-600)] text-[var(--brand-contrast)]">
+                <Package className="w-6 h-6" />
+              </div>
+            )}
             <div>
               <h1 className="font-semibold text-lg">Sistema de Gestión</h1>
-              <p className="text-xs text-white/70">Vidriería</p>
+              <p className="text-xs text-white/70">{negocio.nombreComercial || 'Vidriería'}</p>
             </div>
           </div>
         </div>

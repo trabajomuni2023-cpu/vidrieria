@@ -122,6 +122,7 @@ async function ensureConfiguracionNegocio() {
     data: {
       nombreComercial: 'Vidriería Cristal',
       moneda: 'PEN',
+      logoUrl: null,
       contentPalette: 'oceano',
       sidebarPalette: 'grafito',
       contentCustomColor: null,
@@ -1054,6 +1055,7 @@ app.put('/api/configuracion', async (req, res) => {
     const {
       nombreComercial,
       moneda,
+      logoUrl,
       stockMinimoPorDefecto,
       contentPalette,
       sidebarPalette,
@@ -1061,8 +1063,14 @@ app.put('/api/configuracion', async (req, res) => {
       sidebarCustomColor,
     } = req.body ?? {};
 
-    if (!nombreComercial) {
+    const stockMinimo = Number.parseFloat(String(stockMinimoPorDefecto || 5));
+
+    if (!nombreComercial || !String(nombreComercial).trim()) {
       return res.status(400).json({ message: 'El nombre comercial es obligatorio.' });
+    }
+
+    if (!Number.isFinite(stockMinimo) || stockMinimo < 0) {
+      return res.status(400).json({ message: 'El stock mÃ­nimo debe ser un nÃºmero vÃ¡lido.' });
     }
 
     const configuracion = await prisma.configuracionNegocio.update({
@@ -1070,11 +1078,12 @@ app.put('/api/configuracion', async (req, res) => {
       data: {
         nombreComercial: String(nombreComercial).trim(),
         moneda: moneda || 'PEN',
+        logoUrl: logoUrl ? String(logoUrl).trim() : null,
         contentPalette: contentPalette || current.contentPalette || 'oceano',
         sidebarPalette: sidebarPalette || current.sidebarPalette || 'grafito',
         contentCustomColor: contentCustomColor ? String(contentCustomColor).trim() : null,
         sidebarCustomColor: sidebarCustomColor ? String(sidebarCustomColor).trim() : null,
-        stockMinimoPorDefecto: Number(stockMinimoPorDefecto || 5),
+        stockMinimoPorDefecto: stockMinimo,
       },
     });
 

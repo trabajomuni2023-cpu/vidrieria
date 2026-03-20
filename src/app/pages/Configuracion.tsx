@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Save, Building, User, Package as PackageIcon, Shield, KeyRound, Plus, Edit2, Palette } from 'lucide-react';
+import { Save, Building, User, Package as PackageIcon, Shield, KeyRound, Plus, Edit2, Palette, ImagePlus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -30,6 +30,7 @@ import {
 const defaultNegocio = {
   nombreComercial: '',
   moneda: 'PEN',
+  logoUrl: '',
   stockMinimoPorDefecto: '5',
 };
 
@@ -97,6 +98,7 @@ export default function Configuracion() {
         setDatosNegocio({
           nombreComercial: config.negocio.nombreComercial,
           moneda: config.negocio.moneda,
+          logoUrl: config.negocio.logoUrl || '',
           stockMinimoPorDefecto: String(config.negocio.stockMinimoPorDefecto),
         });
 
@@ -154,6 +156,30 @@ export default function Configuracion() {
     } finally {
       setIsSavingNegocio(false);
     }
+  }
+
+  function handleLogoFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecciona un archivo de imagen válido.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      setDatosNegocio((current) => ({ ...current, logoUrl: result }));
+      toast.success('Logo cargado. Recuerda guardar los cambios.');
+    };
+    reader.onerror = () => {
+      toast.error('No se pudo leer la imagen seleccionada.');
+    };
+    reader.readAsDataURL(file);
   }
 
   async function handleGuardarColores() {
@@ -349,6 +375,54 @@ export default function Configuracion() {
               onChange={(e) => setDatosNegocio({ ...datosNegocio, nombreComercial: e.target.value })}
               placeholder="Nombre del negocio"
             />
+
+            <div className="space-y-3 rounded-2xl border border-gray-200 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--brand-100)]">
+                  <ImagePlus className="h-5 w-5 text-[var(--brand-600)]" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Logo del negocio</p>
+                  <p className="text-sm text-gray-600">Puedes pegar una URL o subir una imagen para mostrarla en el sistema.</p>
+                </div>
+              </div>
+
+              {datosNegocio.logoUrl ? (
+                <div className="flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <img
+                    src={datosNegocio.logoUrl}
+                    alt="Logo del negocio"
+                    className="h-16 w-16 rounded-xl border border-gray-200 object-cover bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setDatosNegocio((current) => ({ ...current, logoUrl: '' }))}
+                    className="text-sm font-medium text-red-600 hover:text-red-700"
+                  >
+                    Quitar logo
+                  </button>
+                </div>
+              ) : null}
+
+              <Input
+                label="URL del logo"
+                value={datosNegocio.logoUrl}
+                onChange={(e) => setDatosNegocio({ ...datosNegocio, logoUrl: e.target.value })}
+                placeholder="https://... o se completa al subir una imagen"
+                helperText="Si prefieres, puedes subir un archivo debajo y se cargará automáticamente."
+              />
+
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-gray-700">Subir imagen</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoFileChange}
+                  className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 file:mr-3 file:rounded-md file:border-0 file:bg-[var(--brand-100)] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[var(--brand-700)]"
+                />
+                <p className="text-xs leading-5 text-gray-500">Ideal para logos cuadrados o transparentes. Luego guarda los cambios del negocio.</p>
+              </div>
+            </div>
 
             <Select
               label="Moneda"

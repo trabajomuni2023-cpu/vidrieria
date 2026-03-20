@@ -4,6 +4,7 @@ export interface ConfiguracionNegocio {
   id: string;
   nombreComercial: string;
   moneda: string;
+  logoUrl?: string | null;
   stockMinimoPorDefecto: number;
   contentPalette: string;
   sidebarPalette: string;
@@ -49,6 +50,7 @@ export async function getConfiguracion() {
 export async function updateConfiguracion(payload: {
   nombreComercial: string;
   moneda: string;
+  logoUrl?: string;
   stockMinimoPorDefecto: string;
   contentPalette?: string;
   sidebarPalette?: string;
