@@ -59,6 +59,41 @@ export function exportRowsToExcel(
   downloadBlob(blob, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
 }
 
+export function exportSheetsToExcel(
+  filename: string,
+  sheets: Array<{
+    sheetName: string;
+    headers: string[];
+    rows: Array<Array<unknown>>;
+  }>,
+) {
+  const workbook = XLSX.utils.book_new();
+
+  for (const sheet of sheets) {
+    const normalizedRows = sheet.rows.map((row) =>
+      sheet.headers.reduce<Record<string, unknown>>((record, header, index) => {
+        record[header] = row[index] ?? '';
+        return record;
+      }, {}),
+    );
+
+    const worksheet = XLSX.utils.json_to_sheet(normalizedRows);
+    worksheet['!cols'] = buildAutoWidths(normalizedRows);
+    XLSX.utils.book_append_sheet(workbook, worksheet, sheet.sheetName);
+  }
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: 'xlsx',
+    type: 'array',
+  });
+
+  const blob = new Blob([excelBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+
+  downloadBlob(blob, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`);
+}
+
 export function printHtmlAsPdf(title: string, html: string) {
   const printWindow = window.open('', '_blank', 'width=1024,height=768');
 

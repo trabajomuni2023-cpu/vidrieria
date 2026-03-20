@@ -453,6 +453,68 @@ function getDateRange(periodo, desde, hasta) {
   };
 }
 
+function getPreviousDateRange(periodo, startDate, endDate) {
+  if (!startDate) {
+    return { start: null, end: null };
+  }
+
+  if (periodo === 'personalizado' && startDate && endDate) {
+    const start = getStartOfDay(startDate);
+    const end = new Date(endDate);
+    const diffMs = end.getTime() - start.getTime();
+    const previousEnd = new Date(start.getTime() - 1);
+    const previousStart = new Date(previousEnd.getTime() - diffMs);
+    previousStart.setHours(0, 0, 0, 0);
+    previousEnd.setHours(23, 59, 59, 999);
+    return { start: previousStart, end: previousEnd };
+  }
+
+  if (periodo === 'dia') {
+    const previousStart = new Date(startDate);
+    previousStart.setDate(previousStart.getDate() - 1);
+    return {
+      start: previousStart,
+      end: new Date(startDate.getTime() - 1),
+    };
+  }
+
+  if (periodo === 'semana') {
+    const previousStart = new Date(startDate);
+    previousStart.setDate(previousStart.getDate() - 7);
+    return {
+      start: previousStart,
+      end: new Date(startDate.getTime() - 1),
+    };
+  }
+
+  if (periodo === 'anio') {
+    const previousStart = new Date(startDate);
+    previousStart.setFullYear(previousStart.getFullYear() - 1);
+    return {
+      start: previousStart,
+      end: new Date(startDate.getTime() - 1),
+    };
+  }
+
+  const previousStart = new Date(startDate.getFullYear(), startDate.getMonth() - 1, 1);
+  return {
+    start: previousStart,
+    end: new Date(startDate.getTime() - 1),
+  };
+}
+
+function buildComparativo(actual, anterior) {
+  const diferencia = actual - anterior;
+  const porcentaje = anterior === 0 ? null : (diferencia / anterior) * 100;
+
+  return {
+    actual,
+    anterior,
+    diferencia,
+    porcentaje,
+  };
+}
+
 function createSeriesBuckets(periodo) {
   const now = new Date();
 
@@ -2263,16 +2325,21 @@ app.get('/api/reportes', async (req, res) => {
     const desde = req.query.desde ? String(req.query.desde) : '';
     const hasta = req.query.hasta ? String(req.query.hasta) : '';
     const { start: startDate, end: endDate } = getDateRange(periodo, desde, hasta);
+    const { start: previousStartDate, end: previousEndDate } = getPreviousDateRange(periodo, startDate, endDate);
     const whereFecha = {
       ...(startDate ? { gte: startDate } : {}),
       ...(endDate ? { lte: endDate } : {}),
+    };
+    const previousWhereFecha = {
+      ...(previousStartDate ? { gte: previousStartDate } : {}),
+      ...(previousEndDate ? { lte: previousEndDate } : {}),
     };
     const series = periodo === 'personalizado'
       ? createCustomSeriesBuckets(startDate, endDate)
       : createSeriesBuckets(periodo);
     const seriesMap = new Map(series.map((item) => [item.key, item]));
 
-    const [movimientos, trabajos, clientes, materiales] = await Promise.all([
+    const [movimientos, previousMovimientos, trabajos, previousTrabajos, clientes, materiales] = await Promise.all([
       prisma.movimientoCaja.findMany({
         where: {
           fecha: whereFecha,
@@ -2281,9 +2348,39 @@ app.get('/api/reportes', async (req, res) => {
           fecha: 'asc',
         },
       }),
+      prisma.movimientoCaja.findMany({
+        where: {
+          fecha: previousWhereFecha,
+        },
+      }),
       prisma.trabajo.findMany({
         where: {
           fechaRegistro: whereFecha,
+        },
+        select: {
+          id: true,
+          numero: true,
+          estado: true,
+          descripcion: true,
+          total: true,
+          saldo: true,
+          cliente: {
+            select: {
+              nombre: true,
+            },
+          },
+          materiales: {
+            select: {
+              cantidad: true,
+              subtotal: true,
+              costoUnitario: true,
+            },
+          },
+        },
+      }),
+      prisma.trabajo.findMany({
+        where: {
+          fechaRegistro: previousWhereFecha,
         },
         select: {
           id: true,
@@ -2294,7 +2391,9 @@ app.get('/api/reportes', async (req, res) => {
         include: {
           trabajos: {
             select: {
+              total: true,
               saldo: true,
+              fechaRegistro: true,
             },
           },
         },
@@ -2319,6 +2418,8 @@ app.get('/api/reportes', async (req, res) => {
 
     let totalIngresos = 0;
     let totalGastos = 0;
+    let totalIngresosAnterior = 0;
+    let totalGastosAnterior = 0;
 
     for (const movimiento of movimientos) {
       const bucket = seriesMap.get(getBucketKey(movimiento.fecha, periodo === 'personalizado' ? 'dia' : periodo));
@@ -2333,6 +2434,14 @@ app.get('/api/reportes', async (req, res) => {
       } else {
         bucket.gastos += Number(movimiento.monto);
         totalGastos += Number(movimiento.monto);
+      }
+    }
+
+    for (const movimiento of previousMovimientos) {
+      if (movimiento.tipo === 'INGRESO') {
+        totalIngresosAnterior += Number(movimiento.monto);
+      } else {
+        totalGastosAnterior += Number(movimiento.monto);
       }
     }
 
@@ -2359,6 +2468,38 @@ app.get('/api/reportes', async (req, res) => {
       .sort((a, b) => b.saldo - a.saldo)
       .slice(0, 5);
 
+    const clientesConMasCompras = clientes
+      .map((cliente) => {
+        const trabajosEnPeriodo = cliente.trabajos.filter((trabajo) => {
+          const fecha = new Date(trabajo.fechaRegistro);
+
+          if (startDate && fecha < startDate) {
+            return false;
+          }
+
+          if (endDate && fecha > endDate) {
+            return false;
+          }
+
+          return true;
+        });
+
+        return {
+          cliente: cliente.nombre,
+          totalCompras: trabajosEnPeriodo.reduce((sum, trabajo) => sum + Number(trabajo.total || 0), 0),
+          trabajos: trabajosEnPeriodo.length,
+        };
+      })
+      .filter((cliente) => cliente.totalCompras > 0 || cliente.trabajos > 0)
+      .sort((a, b) => {
+        if (b.totalCompras !== a.totalCompras) {
+          return b.totalCompras - a.totalCompras;
+        }
+
+        return b.trabajos - a.trabajos;
+      })
+      .slice(0, 5);
+
     const productosMap = new Map();
 
     for (const material of materiales) {
@@ -2373,6 +2514,34 @@ app.get('/api/reportes', async (req, res) => {
       .sort((a, b) => b.cantidad - a.cantidad)
       .slice(0, 5);
 
+    const trabajosRentables = trabajos
+      .map((trabajo) => {
+        const costoMateriales = trabajo.materiales.reduce((sum, material) => {
+          if (material.subtotal != null) {
+            return sum + Number(material.subtotal);
+          }
+
+          return sum + (Number(material.cantidad) * Number(material.costoUnitario || 0));
+        }, 0);
+        const totalTrabajo = Number(trabajo.total || 0);
+        const utilidadEstimada = totalTrabajo - costoMateriales;
+        const margenPorcentaje = totalTrabajo > 0 ? (utilidadEstimada / totalTrabajo) * 100 : 0;
+
+        return {
+          id: trabajo.id,
+          numero: trabajo.numero,
+          cliente: trabajo.cliente?.nombre || 'Cliente sin nombre',
+          descripcion: trabajo.descripcion,
+          total: totalTrabajo,
+          costoMateriales,
+          utilidadEstimada,
+          margenPorcentaje,
+          estado: trabajo.estado,
+        };
+      })
+      .sort((a, b) => b.utilidadEstimada - a.utilidadEstimada)
+      .slice(0, 8);
+
     res.json({
       totalIngresos,
       totalGastos,
@@ -2382,6 +2551,14 @@ app.get('/api/reportes', async (req, res) => {
       trabajosPorEstado,
       clientesConSaldo,
       productosUsados,
+      comparativo: {
+        ingresos: buildComparativo(totalIngresos, totalIngresosAnterior),
+        gastos: buildComparativo(totalGastos, totalGastosAnterior),
+        utilidad: buildComparativo(totalIngresos - totalGastos, totalIngresosAnterior - totalGastosAnterior),
+        trabajos: buildComparativo(trabajos.length, previousTrabajos.length),
+      },
+      trabajosRentables,
+      clientesConMasCompras,
     });
   } catch (error) {
     console.error('Error al cargar reportes:', error);

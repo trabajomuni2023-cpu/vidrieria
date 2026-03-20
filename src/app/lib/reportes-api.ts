@@ -19,6 +19,31 @@ export interface ReporteProductoUsado {
   cantidad: number;
 }
 
+export interface ReporteComparativoItem {
+  actual: number;
+  anterior: number;
+  diferencia: number;
+  porcentaje: number | null;
+}
+
+export interface ReporteRentabilidadTrabajo {
+  id: string;
+  numero: string;
+  cliente: string;
+  descripcion: string;
+  total: number;
+  costoMateriales: number;
+  utilidadEstimada: number;
+  margenPorcentaje: number;
+  estado: string;
+}
+
+export interface ReporteClienteCompras {
+  cliente: string;
+  totalCompras: number;
+  trabajos: number;
+}
+
 export interface ReportesResumen {
   totalIngresos: number;
   totalGastos: number;
@@ -28,6 +53,14 @@ export interface ReportesResumen {
   trabajosPorEstado: ReporteEstadoTrabajo[];
   clientesConSaldo: ReporteClienteSaldo[];
   productosUsados: ReporteProductoUsado[];
+  comparativo: {
+    ingresos: ReporteComparativoItem;
+    gastos: ReporteComparativoItem;
+    utilidad: ReporteComparativoItem;
+    trabajos: ReporteComparativoItem;
+  };
+  trabajosRentables: ReporteRentabilidadTrabajo[];
+  clientesConMasCompras: ReporteClienteCompras[];
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -36,7 +69,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
   }
 
   const data = (await response.json().catch(() => null)) as { message?: string } | null;
-  throw new Error(data?.message || 'Ocurrio un error inesperado.');
+  throw new Error(data?.message || 'Ocurrió un error inesperado.');
 }
 
 export async function getReportes(periodo: string, desde?: string, hasta?: string) {

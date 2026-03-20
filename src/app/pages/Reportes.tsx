@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, Briefcase, DollarSign, Download, FileText, RotateCcw, Sparkles } from 'lucide-react';
+﻿import { useEffect, useMemo, useState } from 'react';
+import { TrendingUp, TrendingDown, Briefcase, DollarSign, Download, FileText, RotateCcw, Sparkles, Scale, Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { formatCurrency } from '../lib/utils';
 import { getReportes, type ReportesResumen } from '../lib/reportes-api';
 import { toast } from 'sonner';
-import { exportRowsToExcel, printHtmlAsPdf } from '../lib/export';
+import { exportSheetsToExcel, printHtmlAsPdf } from '../lib/export';
 import {
   BarChart,
   Bar,
@@ -41,6 +41,14 @@ const emptyReport: ReportesResumen = {
   trabajosPorEstado: [],
   clientesConSaldo: [],
   productosUsados: [],
+  comparativo: {
+    ingresos: { actual: 0, anterior: 0, diferencia: 0, porcentaje: null },
+    gastos: { actual: 0, anterior: 0, diferencia: 0, porcentaje: null },
+    utilidad: { actual: 0, anterior: 0, diferencia: 0, porcentaje: null },
+    trabajos: { actual: 0, anterior: 0, diferencia: 0, porcentaje: null },
+  },
+  trabajosRentables: [],
+  clientesConMasCompras: [],
 };
 
 function formatEstadoLabel(estado: string) {
@@ -49,6 +57,11 @@ function formatEstadoLabel(estado: string) {
     .split('_')
     .map((fragment) => fragment.charAt(0).toUpperCase() + fragment.slice(1))
     .join(' ');
+}
+
+function formatComparativoValue(value: number, suffix = '') {
+  const signal = value > 0 ? '+' : '';
+  return `${signal}${value.toFixed(1)}${suffix}`;
 }
 
 export default function Reportes() {
@@ -115,18 +128,59 @@ export default function Reportes() {
   }
 
   function handleExportExcel() {
-    exportRowsToExcel(
-      'reporte-resumen',
-      'Resumen',
-      ['Concepto', 'Valor'],
-      [
-        ['Total ingresos', data.totalIngresos],
-        ['Total gastos', data.totalGastos],
-        ['Utilidad neta', data.utilidadNeta],
-        ['Trabajos realizados', data.trabajosRealizados],
-      ],
-    );
-    toast.success('Resumen exportado en Excel.');
+    exportSheetsToExcel('reporte-vidrieria', [
+      {
+        sheetName: 'Resumen',
+        headers: ['Concepto', 'Valor'],
+        rows: [
+          ['Periodo', periodLabel],
+          ['Total ingresos', data.totalIngresos],
+          ['Total gastos', data.totalGastos],
+          ['Utilidad neta', data.utilidadNeta],
+          ['Trabajos realizados', data.trabajosRealizados],
+        ],
+      },
+      {
+        sheetName: 'Comparativo',
+        headers: ['Indicador', 'Actual', 'Anterior', 'Diferencia', 'Porcentaje'],
+        rows: [
+          ['Ingresos', data.comparativo.ingresos.actual, data.comparativo.ingresos.anterior, data.comparativo.ingresos.diferencia, data.comparativo.ingresos.porcentaje == null ? 'N/A' : `${data.comparativo.ingresos.porcentaje.toFixed(1)}%`],
+          ['Gastos', data.comparativo.gastos.actual, data.comparativo.gastos.anterior, data.comparativo.gastos.diferencia, data.comparativo.gastos.porcentaje == null ? 'N/A' : `${data.comparativo.gastos.porcentaje.toFixed(1)}%`],
+          ['Utilidad', data.comparativo.utilidad.actual, data.comparativo.utilidad.anterior, data.comparativo.utilidad.diferencia, data.comparativo.utilidad.porcentaje == null ? 'N/A' : `${data.comparativo.utilidad.porcentaje.toFixed(1)}%`],
+          ['Trabajos', data.comparativo.trabajos.actual, data.comparativo.trabajos.anterior, data.comparativo.trabajos.diferencia, data.comparativo.trabajos.porcentaje == null ? 'N/A' : `${data.comparativo.trabajos.porcentaje.toFixed(1)}%`],
+        ],
+      },
+      {
+        sheetName: 'Rentabilidad',
+        headers: ['Numero', 'Cliente', 'Descripcion', 'Estado', 'Total', 'Costo materiales', 'Utilidad estimada', 'Margen'],
+        rows: data.trabajosRentables.map((trabajo) => [
+          trabajo.numero,
+          trabajo.cliente,
+          trabajo.descripcion,
+          trabajo.estado,
+          trabajo.total,
+          trabajo.costoMateriales,
+          trabajo.utilidadEstimada,
+          `${trabajo.margenPorcentaje.toFixed(1)}%`,
+        ]),
+      },
+      {
+        sheetName: 'Clientes deuda',
+        headers: ['Cliente', 'Saldo pendiente'],
+        rows: data.clientesConSaldo.map((cliente) => [cliente.cliente, cliente.saldo]),
+      },
+      {
+        sheetName: 'Clientes compras',
+        headers: ['Cliente', 'Total compras', 'Trabajos'],
+        rows: data.clientesConMasCompras.map((cliente) => [cliente.cliente, cliente.totalCompras, cliente.trabajos]),
+      },
+      {
+        sheetName: 'Productos',
+        headers: ['Producto', 'Cantidad'],
+        rows: data.productosUsados.map((producto) => [producto.producto, producto.cantidad]),
+      },
+    ]);
+    toast.success('Reporte completo exportado en Excel.');
   }
 
   function handleExportPdf() {
@@ -139,6 +193,16 @@ export default function Reportes() {
         <div class="card"><strong>Utilidad neta</strong><p>${formatCurrency(data.utilidadNeta)}</p></div>
         <div class="card"><strong>Trabajos realizados</strong><p>${data.trabajosRealizados}</p></div>
       </div>
+      <h2>Comparativo con periodo anterior</h2>
+      <table>
+        <thead><tr><th>Indicador</th><th>Actual</th><th>Anterior</th><th>Diferencia</th><th>Variacion</th></tr></thead>
+        <tbody>
+          <tr><td>Ingresos</td><td>${formatCurrency(data.comparativo.ingresos.actual)}</td><td>${formatCurrency(data.comparativo.ingresos.anterior)}</td><td>${formatCurrency(data.comparativo.ingresos.diferencia)}</td><td>${data.comparativo.ingresos.porcentaje == null ? 'N/A' : `${data.comparativo.ingresos.porcentaje.toFixed(1)}%`}</td></tr>
+          <tr><td>Gastos</td><td>${formatCurrency(data.comparativo.gastos.actual)}</td><td>${formatCurrency(data.comparativo.gastos.anterior)}</td><td>${formatCurrency(data.comparativo.gastos.diferencia)}</td><td>${data.comparativo.gastos.porcentaje == null ? 'N/A' : `${data.comparativo.gastos.porcentaje.toFixed(1)}%`}</td></tr>
+          <tr><td>Utilidad</td><td>${formatCurrency(data.comparativo.utilidad.actual)}</td><td>${formatCurrency(data.comparativo.utilidad.anterior)}</td><td>${formatCurrency(data.comparativo.utilidad.diferencia)}</td><td>${data.comparativo.utilidad.porcentaje == null ? 'N/A' : `${data.comparativo.utilidad.porcentaje.toFixed(1)}%`}</td></tr>
+          <tr><td>Trabajos</td><td>${data.comparativo.trabajos.actual}</td><td>${data.comparativo.trabajos.anterior}</td><td>${data.comparativo.trabajos.diferencia}</td><td>${data.comparativo.trabajos.porcentaje == null ? 'N/A' : `${data.comparativo.trabajos.porcentaje.toFixed(1)}%`}</td></tr>
+        </tbody>
+      </table>
       <h2>Trabajos por estado</h2>
       <table>
         <thead><tr><th>Estado</th><th>Cantidad</th></tr></thead>
@@ -158,6 +222,20 @@ export default function Reportes() {
         <thead><tr><th>Producto</th><th>Cantidad</th></tr></thead>
         <tbody>
           ${data.productosUsados.map((item) => `<tr><td>${item.producto}</td><td>${item.cantidad}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <h2>Trabajos con mayor rentabilidad estimada</h2>
+      <table>
+        <thead><tr><th>Trabajo</th><th>Cliente</th><th>Total</th><th>Costo materiales</th><th>Utilidad</th><th>Margen</th></tr></thead>
+        <tbody>
+          ${data.trabajosRentables.map((item) => `<tr><td>${item.numero}</td><td>${item.cliente}</td><td>${formatCurrency(item.total)}</td><td>${formatCurrency(item.costoMateriales)}</td><td>${formatCurrency(item.utilidadEstimada)}</td><td>${item.margenPorcentaje.toFixed(1)}%</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <h2>Clientes con más compras</h2>
+      <table>
+        <thead><tr><th>Cliente</th><th>Total compras</th><th>Trabajos</th></tr></thead>
+        <tbody>
+          ${data.clientesConMasCompras.map((item) => `<tr><td>${item.cliente}</td><td>${formatCurrency(item.totalCompras)}</td><td>${item.trabajos}</td></tr>`).join('')}
         </tbody>
       </table>
     `;
@@ -257,6 +335,9 @@ export default function Reportes() {
                 <p className="mt-1 text-2xl font-bold text-emerald-700">
                   {formatCurrency(data.totalIngresos)}
                 </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  vs anterior: {formatCurrency(data.comparativo.ingresos.anterior)} {data.comparativo.ingresos.porcentaje != null ? `(${formatComparativoValue(data.comparativo.ingresos.porcentaje, '%')})` : ''}
+                </p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 ring-1 ring-emerald-200">
                 <TrendingUp className="w-6 h-6 text-emerald-600" />
@@ -273,6 +354,9 @@ export default function Reportes() {
                 <p className="mt-1 text-2xl font-bold text-rose-700">
                   {formatCurrency(data.totalGastos)}
                 </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  vs anterior: {formatCurrency(data.comparativo.gastos.anterior)} {data.comparativo.gastos.porcentaje != null ? `(${formatComparativoValue(data.comparativo.gastos.porcentaje, '%')})` : ''}
+                </p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-100 ring-1 ring-rose-200">
                 <TrendingDown className="w-6 h-6 text-rose-600" />
@@ -287,6 +371,9 @@ export default function Reportes() {
               <div>
                 <p className="text-sm text-slate-600">Trabajos realizados</p>
                 <p className="mt-1 text-2xl font-bold text-sky-700">{data.trabajosRealizados}</p>
+                <p className="mt-2 text-xs text-slate-500">
+                  vs anterior: {data.comparativo.trabajos.anterior} {data.comparativo.trabajos.porcentaje != null ? `(${formatComparativoValue(data.comparativo.trabajos.porcentaje, '%')})` : ''}
+                </p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 ring-1 ring-sky-200">
                 <Briefcase className="w-6 h-6 text-sky-600" />
@@ -302,6 +389,9 @@ export default function Reportes() {
                 <p className="text-sm text-slate-600">Utilidad neta</p>
                 <p className="mt-1 text-2xl font-bold text-violet-700">
                   {formatCurrency(data.utilidadNeta)}
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  vs anterior: {formatCurrency(data.comparativo.utilidad.anterior)} {data.comparativo.utilidad.porcentaje != null ? `(${formatComparativoValue(data.comparativo.utilidad.porcentaje, '%')})` : ''}
                 </p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-100 ring-1 ring-violet-200">
@@ -340,6 +430,15 @@ export default function Reportes() {
           </CardHeader>
           <CardContent className="space-y-4 pt-6">
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Comparativo del periodo</p>
+              <p className="mt-2 text-lg font-semibold text-slate-900">
+                {data.comparativo.ingresos.diferencia >= 0 ? 'Ingresos al alza' : 'Ingresos por debajo del periodo anterior'}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                Diferencia de {formatCurrency(data.comparativo.ingresos.diferencia)} frente al corte anterior equivalente.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Margen estimado</p>
               <p className="mt-2 text-2xl font-semibold text-slate-900">
                 {data.totalIngresos > 0 ? `${((data.utilidadNeta / data.totalIngresos) * 100).toFixed(1)}%` : '0.0%'}
@@ -355,6 +454,95 @@ export default function Reportes() {
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Producto mas usado</p>
               <p className="mt-2 text-lg font-semibold text-slate-900">{data.productosUsados[0]?.producto || 'Sin registros'}</p>
               <p className="mt-1 text-sm text-slate-600">Ayuda a identificar materiales de mayor rotacion.</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <Card className="border-slate-200/80 shadow-sm">
+          <CardHeader className="border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-3">
+              <Scale className="h-5 w-5 text-violet-600" />
+              <div>
+                <CardTitle>Rentabilidad por trabajo</CardTitle>
+                <CardDescription>Estimacion basada en total facturado menos costo de materiales registrados.</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="border-b border-slate-200 bg-slate-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Trabajo</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Cliente</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">Utilidad</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">Margen</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {data.trabajosRentables.map((trabajo) => (
+                    <tr key={trabajo.id} className="hover:bg-slate-50/80">
+                      <td className="px-4 py-3 text-sm text-slate-900">
+                        <div className="font-medium">{trabajo.numero}</div>
+                        <div className="text-xs text-slate-500">{trabajo.descripcion}</div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-700">{trabajo.cliente}</td>
+                      <td className="px-4 py-3 text-right text-sm font-medium text-emerald-600">{formatCurrency(trabajo.utilidadEstimada)}</td>
+                      <td className="px-4 py-3 text-right text-sm text-slate-700">{trabajo.margenPorcentaje.toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                  {!isLoading && data.trabajosRentables.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-500">
+                        No hay trabajos con materiales registrados en este periodo.
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200/80 shadow-sm">
+          <CardHeader className="border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 text-sky-600" />
+              <div>
+                <CardTitle>Clientes con más compras</CardTitle>
+                <CardDescription>Ranking por monto trabajado dentro del periodo seleccionado.</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="border-b border-slate-200 bg-slate-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Cliente</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">Compras</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">Trabajos</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {data.clientesConMasCompras.map((cliente) => (
+                    <tr key={cliente.cliente} className="hover:bg-slate-50/80">
+                      <td className="px-4 py-3 text-sm text-slate-900">{cliente.cliente}</td>
+                      <td className="px-4 py-3 text-right text-sm font-medium text-sky-700">{formatCurrency(cliente.totalCompras)}</td>
+                      <td className="px-4 py-3 text-right text-sm text-slate-700">{cliente.trabajos}</td>
+                    </tr>
+                  ))}
+                  {!isLoading && data.clientesConMasCompras.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-10 text-center text-sm text-slate-500">
+                        No hay compras registradas en este periodo.
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>
@@ -475,3 +663,4 @@ export default function Reportes() {
     </div>
   );
 }
+
