@@ -120,8 +120,10 @@ async function ensureConfiguracionNegocio() {
 
   return prisma.configuracionNegocio.create({
     data: {
-      nombreComercial: 'Vidrieria Cristal',
+      nombreComercial: 'Vidriería Cristal',
       moneda: 'PEN',
+      contentPalette: 'oceano',
+      sidebarPalette: 'grafito',
       stockMinimoPorDefecto: 5,
     },
   });
@@ -320,7 +322,7 @@ function mapGasto(gasto) {
     id: gasto.id,
     fecha: gasto.fecha,
     descripcion: gasto.descripcion,
-    categoria: gasto.categoria?.nombre || 'Sin categoria',
+    categoria: gasto.categoria?.nombre || 'Sin categoría',
     monto: Number(gasto.monto),
     referencia: gasto.referencia,
     observacion: gasto.observacion,
@@ -856,7 +858,7 @@ app.patch('/api/auth/profile', async (req, res) => {
     const usuario = await getAuthenticatedUser(req);
 
     if (!usuario) {
-      return res.status(401).json({ message: 'Sesion invalida o vencida.' });
+      return res.status(401).json({ message: 'Sesión inválida o vencida.' });
     }
 
     const { nombre, email, telefono } = req.body ?? {};
@@ -886,7 +888,7 @@ app.patch('/api/auth/password', async (req, res) => {
     const usuario = await getAuthenticatedUser(req);
 
     if (!usuario) {
-      return res.status(401).json({ message: 'Sesion invalida o vencida.' });
+      return res.status(401).json({ message: 'Sesión inválida o vencida.' });
     }
 
     const { currentPassword, newPassword } = req.body ?? {};
@@ -922,7 +924,7 @@ app.get('/api/usuarios', async (req, res) => {
     const usuario = await getAuthenticatedUser(req);
 
     if (!usuario) {
-      return res.status(401).json({ message: 'Sesion invalida o vencida.' });
+      return res.status(401).json({ message: 'Sesión inválida o vencida.' });
     }
 
     if (usuario.rol !== 'ADMIN') {
@@ -947,7 +949,7 @@ app.post('/api/usuarios', async (req, res) => {
     const usuario = await getAuthenticatedUser(req);
 
     if (!usuario) {
-      return res.status(401).json({ message: 'Sesion invalida o vencida.' });
+      return res.status(401).json({ message: 'Sesión inválida o vencida.' });
     }
 
     if (usuario.rol !== 'ADMIN') {
@@ -982,7 +984,7 @@ app.put('/api/usuarios/:id', async (req, res) => {
     const authUser = await getAuthenticatedUser(req);
 
     if (!authUser) {
-      return res.status(401).json({ message: 'Sesion invalida o vencida.' });
+      return res.status(401).json({ message: 'Sesión inválida o vencida.' });
     }
 
     if (authUser.rol !== 'ADMIN') {
@@ -1019,7 +1021,7 @@ app.get('/api/configuracion', async (req, res) => {
     const usuario = await getAuthenticatedUser(req);
 
     if (!usuario) {
-      return res.status(401).json({ message: 'Sesion invalida o vencida.' });
+      return res.status(401).json({ message: 'Sesión inválida o vencida.' });
     }
 
     const configuracion = await ensureConfiguracionNegocio();
@@ -1030,7 +1032,7 @@ app.get('/api/configuracion', async (req, res) => {
     });
   } catch (error) {
     console.error('Error al cargar configuracion:', error);
-    res.status(500).json({ message: 'No se pudo cargar la configuracion.' });
+    res.status(500).json({ message: 'No se pudo cargar la configuración.' });
   }
 });
 
@@ -1039,15 +1041,15 @@ app.put('/api/configuracion', async (req, res) => {
     const usuario = await getAuthenticatedUser(req);
 
     if (!usuario) {
-      return res.status(401).json({ message: 'Sesion invalida o vencida.' });
+      return res.status(401).json({ message: 'Sesión inválida o vencida.' });
     }
 
     if (usuario.rol !== 'ADMIN') {
-      return res.status(403).json({ message: 'No tienes permisos para editar la configuracion.' });
+      return res.status(403).json({ message: 'No tienes permisos para editar la configuración.' });
     }
 
     const current = await ensureConfiguracionNegocio();
-    const { nombreComercial, moneda, stockMinimoPorDefecto } = req.body ?? {};
+    const { nombreComercial, moneda, stockMinimoPorDefecto, contentPalette, sidebarPalette } = req.body ?? {};
 
     if (!nombreComercial) {
       return res.status(400).json({ message: 'El nombre comercial es obligatorio.' });
@@ -1058,6 +1060,8 @@ app.put('/api/configuracion', async (req, res) => {
       data: {
         nombreComercial: String(nombreComercial).trim(),
         moneda: moneda || 'PEN',
+        contentPalette: contentPalette || current.contentPalette || 'oceano',
+        sidebarPalette: sidebarPalette || current.sidebarPalette || 'grafito',
         stockMinimoPorDefecto: Number(stockMinimoPorDefecto || 5),
       },
     });
@@ -1065,7 +1069,7 @@ app.put('/api/configuracion', async (req, res) => {
     res.json({ negocio: configuracion });
   } catch (error) {
     console.error('Error al actualizar configuracion:', error);
-    res.status(500).json({ message: 'No se pudo actualizar la configuracion.' });
+    res.status(500).json({ message: 'No se pudo actualizar la configuración.' });
   }
 });
 
@@ -1365,7 +1369,7 @@ app.post('/api/cotizaciones', async (req, res) => {
     } = req.body ?? {};
 
     if (!clienteId || !fechaVigencia || !descripcion || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'Cliente, vigencia, descripcion e items son obligatorios.' });
+      return res.status(400).json({ message: 'Cliente, vigencia, descripción e ítems son obligatorios.' });
     }
 
     const cliente = await prisma.cliente.findUnique({
@@ -1394,7 +1398,7 @@ app.post('/api/cotizaciones', async (req, res) => {
       .filter((item) => item.descripcion && item.unidad && item.cantidad > 0 && item.precioUnitario >= 0);
 
     if (parsedItems.length === 0) {
-      return res.status(400).json({ message: 'Debes registrar al menos un item valido.' });
+      return res.status(400).json({ message: 'Debes registrar al menos un ítem válido.' });
     }
 
     const manoObraNumero = Number(manoObra || 0);
@@ -1452,7 +1456,7 @@ app.put('/api/cotizaciones/:id', async (req, res) => {
     } = req.body ?? {};
 
     if (!clienteId || !fechaVigencia || !descripcion || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'Cliente, vigencia, descripcion e items son obligatorios.' });
+      return res.status(400).json({ message: 'Cliente, vigencia, descripción e ítems son obligatorios.' });
     }
 
     const cotizacionExistente = await prisma.cotizacion.findUnique({
@@ -1495,7 +1499,7 @@ app.put('/api/cotizaciones/:id', async (req, res) => {
       .filter((item) => item.descripcion && item.unidad && item.cantidad > 0 && item.precioUnitario >= 0);
 
     if (parsedItems.length === 0) {
-      return res.status(400).json({ message: 'Debes registrar al menos un item valido.' });
+      return res.status(400).json({ message: 'Debes registrar al menos un ítem válido.' });
     }
 
     const manoObraNumero = Number(manoObra || 0);
@@ -1812,7 +1816,7 @@ app.post('/api/trabajos', async (req, res) => {
     const adelantoNumero = Number(adelantoInicial || 0);
 
     if (!clienteId || !descripcion || totalNumero <= 0) {
-      return res.status(400).json({ message: 'Cliente, descripcion y total valido son obligatorios.' });
+      return res.status(400).json({ message: 'Cliente, descripción y total válido son obligatorios.' });
     }
 
     const cliente = await prisma.cliente.findUnique({
@@ -1928,7 +1932,7 @@ app.put('/api/trabajos/:id', async (req, res) => {
     const totalNumero = Number(total || 0);
 
     if (!clienteId || !descripcion || totalNumero <= 0) {
-      return res.status(400).json({ message: 'Cliente, descripcion y total valido son obligatorios.' });
+      return res.status(400).json({ message: 'Cliente, descripción y total válido son obligatorios.' });
     }
 
     const trabajoExistente = await prisma.trabajo.findUnique({
@@ -2099,7 +2103,7 @@ app.post('/api/gastos', async (req, res) => {
     const montoNumero = Number(monto || 0);
 
     if (!descripcion || montoNumero <= 0) {
-      return res.status(400).json({ message: 'Descripcion y monto valido son obligatorios.' });
+      return res.status(400).json({ message: 'Descripción y monto válido son obligatorios.' });
     }
 
     const categoriaId = await ensureCategoriaGasto(categoria);
@@ -2147,7 +2151,7 @@ app.put('/api/gastos/:id', async (req, res) => {
     const montoNumero = Number(monto || 0);
 
     if (!descripcion || montoNumero <= 0) {
-      return res.status(400).json({ message: 'Descripcion y monto valido son obligatorios.' });
+      return res.status(400).json({ message: 'Descripción y monto válido son obligatorios.' });
     }
 
     const gastoExistente = await prisma.gasto.findUnique({

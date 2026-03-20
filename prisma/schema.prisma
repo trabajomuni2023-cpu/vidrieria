@@ -361,6 +361,8 @@ model ConfiguracionNegocio {
   direccion            String?
   moneda               Moneda   @default(PEN)
   logoUrl              String?
+  contentPalette       String   @default("oceano")
+  sidebarPalette       String   @default("grafito")
   stockMinimoPorDefecto Decimal @default(5) @db.Decimal(12, 3)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt

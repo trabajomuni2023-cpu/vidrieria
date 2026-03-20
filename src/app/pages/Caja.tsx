@@ -94,14 +94,14 @@ export default function Caja() {
         <p className="text-sm text-gray-600 mt-1">Control de ingresos y salidas</p>
       </div>
 
-      <Card className="bg-gradient-to-br from-blue-600 to-blue-700 border-none">
+      <Card className="border-none" style={{ backgroundImage: 'linear-gradient(135deg, var(--brand-600), var(--brand-700))' }}>
         <CardContent className="p-8">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
               <Wallet className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-sm text-blue-100 mb-1">Saldo en caja</p>
+              <p className="mb-1 text-sm text-white/80">Saldo en caja</p>
               <p className="text-4xl font-bold text-white">{formatCurrency(saldoCaja)}</p>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function Caja() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Balance del dia</CardTitle>
+          <CardTitle>Balance del día</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -135,18 +135,18 @@ export default function Caja() {
             <div className="flex items-start gap-3">
               <div
                 className={`w-12 h-12 ${
-                  balanceDia >= 0 ? 'bg-blue-100' : 'bg-red-100'
+                  balanceDia >= 0 ? 'bg-[var(--brand-100)]' : 'bg-red-100'
                 } rounded-lg flex items-center justify-center flex-shrink-0`}
               >
                 <DollarSign
-                  className={`w-6 h-6 ${balanceDia >= 0 ? 'text-blue-600' : 'text-red-600'}`}
+                  className={`w-6 h-6 ${balanceDia >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'}`}
                 />
               </div>
               <div>
                 <p className="text-xs text-gray-600 mb-1">Balance neto</p>
                 <p
                   className={`text-2xl font-bold ${
-                    balanceDia >= 0 ? 'text-blue-600' : 'text-red-600'
+                    balanceDia >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'
                   }`}
                 >
                   {formatCurrency(balanceDia)}
@@ -175,7 +175,7 @@ export default function Caja() {
             <p className="text-sm text-gray-600">Balance semanal</p>
             <p
               className={`text-2xl font-bold mt-1 ${
-                balanceSemana >= 0 ? 'text-blue-600' : 'text-red-600'
+                balanceSemana >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'
               }`}
             >
               {formatCurrency(balanceSemana)}
@@ -194,7 +194,7 @@ export default function Caja() {
                 placeholder="Buscar movimientos..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
             <div className="flex gap-2">
@@ -202,7 +202,7 @@ export default function Caja() {
                 onClick={() => setFiltroTipo('todos')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filtroTipo === 'todos'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]'
                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
               >
@@ -244,7 +244,7 @@ export default function Caja() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripcion</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referencia</th>
                 </tr>
@@ -277,7 +277,7 @@ export default function Caja() {
                 {!isLoading && filteredMovimientos.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-500">
-                      No hay movimientos en caja todavia.
+                      No hay movimientos en caja todavía.
                     </td>
                   </tr>
                 ) : null}

@@ -188,7 +188,7 @@ export default function Gastos() {
                 placeholder="Buscar por descripcion o categoria..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
             <Select value={filtroCategoria} onChange={(event) => setFiltroCategoria(event.target.value)} options={[{ value: 'todos', label: 'Todas las categorias' }, ...Array.from(new Set(gastos.map((gasto) => gasto.categoria))).map((categoria) => ({ value: categoria, label: categoria }))]} className="w-full lg:w-56" />

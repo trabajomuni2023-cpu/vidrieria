@@ -94,15 +94,24 @@ export default function Configuracion() {
           stockMinimoPorDefecto: String(config.negocio.stockMinimoPorDefecto),
         });
 
+        setContentPalette((config.negocio.contentPalette as ThemePaletteId) || storedTheme.contentPaletteId);
+        setSidebarPalette((config.negocio.sidebarPalette as ThemePaletteId) || storedTheme.sidebarPaletteId);
+
         setDatosUsuario({
           nombre: config.user.nombre,
           email: config.user.email,
           telefono: config.user.telefono || '',
         });
 
+        const nextTheme = {
+          contentPaletteId: (config.negocio.contentPalette as ThemePaletteId) || storedTheme.contentPaletteId,
+          sidebarPaletteId: (config.negocio.sidebarPalette as ThemePaletteId) || storedTheme.sidebarPaletteId,
+        };
+
+        applyThemePreferences(nextTheme);
         setUsuarios(usuariosData);
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'No se pudo cargar la configuracion.');
+        toast.error(error instanceof Error ? error.message : 'No se pudo cargar la configuración.');
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -122,7 +131,11 @@ export default function Configuracion() {
     setIsSavingNegocio(true);
 
     try {
-      await updateConfiguracion(datosNegocio);
+      await updateConfiguracion({
+        ...datosNegocio,
+        contentPalette,
+        sidebarPalette,
+      });
       toast.success('Datos del negocio actualizados');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'No se pudo actualizar el negocio.');
@@ -149,7 +162,7 @@ export default function Configuracion() {
     event.preventDefault();
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('La nueva contraseña y su confirmacion no coinciden.');
+      toast.error('La nueva contraseña y su confirmación no coinciden.');
       return;
     }
 
@@ -237,7 +250,7 @@ export default function Configuracion() {
   function handleSidebarPaletteChange(paletteId: ThemePaletteId) {
     setSidebarPalette(paletteId);
     applySidebarPalette(paletteId);
-    toast.success('Color del menu lateral actualizado');
+    toast.success('Color del menú lateral actualizado');
   }
 
   function handleApplyPreset(presetId: string) {
@@ -256,8 +269,8 @@ export default function Configuracion() {
   return (
     <div className="p-6 space-y-6 max-w-5xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configuracion</h1>
-        <p className="text-sm text-gray-600 mt-1">Administra la configuracion del sistema y los usuarios</p>
+        <h1 className="text-2xl font-bold text-gray-900">Configuración</h1>
+        <p className="text-sm text-gray-600 mt-1">Administra la configuración del sistema y los usuarios</p>
       </div>
 
       <Card>
@@ -284,7 +297,7 @@ export default function Configuracion() {
               onChange={(e) => setDatosNegocio({ ...datosNegocio, moneda: e.target.value })}
               options={[
                 { value: 'PEN', label: 'Soles (S/)' },
-                { value: 'USD', label: 'Dolares ($)' },
+                { value: 'USD', label: 'Dólares ($)' },
               ]}
             />
 
@@ -314,7 +327,7 @@ export default function Configuracion() {
             </div>
             <div>
               <CardTitle>Colores del sistema</CardTitle>
-              <p className="text-sm text-gray-600">Puedes usar un color distinto para el menu lateral y otro para la vista principal.</p>
+              <p className="text-sm text-gray-600">Puedes usar un color distinto para el menú lateral y otro para la vista principal.</p>
             </div>
           </div>
         </CardHeader>
@@ -352,7 +365,7 @@ export default function Configuracion() {
                   <p className="font-semibold text-gray-900">{preset.name}</p>
                   <p className="mt-1 text-sm text-gray-600">{preset.description}</p>
                   <p className="mt-3 text-xs uppercase tracking-[0.18em] text-gray-500">
-                    Menu {sidebarTheme?.name} · Vista {contentTheme?.name}
+                    Menú {sidebarTheme?.name} · Vista {contentTheme?.name}
                   </p>
                 </button>
               );
@@ -401,7 +414,7 @@ export default function Configuracion() {
             })}
           </div>
           <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-base font-semibold text-gray-900">Menu lateral</h3>
+            <h3 className="text-base font-semibold text-gray-900">Menú lateral</h3>
             <p className="mt-1 text-sm text-gray-600">Ideal para dejarlo mas sobrio y que descanse mejor la vista.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
@@ -442,7 +455,7 @@ export default function Configuracion() {
             })}
           </div>
           <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-600">
-            Estos cambios se guardan en el navegador actual. Si luego quieres, puedo hacer que tambien se guarden en la base de datos para que todos vean la misma combinacion por defecto.
+            Estos colores ya forman parte de la configuración del negocio. Cuando guardes cambios, quedarán listos como preferencia general para todos.
           </div>
         </CardContent>
       </Card>
@@ -465,14 +478,14 @@ export default function Configuracion() {
             />
 
             <Input
-              label="Correo electronico"
+              label="Correo electrónico"
               type="email"
               value={datosUsuario.email}
               onChange={(e) => setDatosUsuario({ ...datosUsuario, email: e.target.value })}
             />
 
             <Input
-              label="Telefono"
+              label="Teléfono"
               value={datosUsuario.telefono}
               onChange={(e) => setDatosUsuario({ ...datosUsuario, telefono: e.target.value })}
             />
@@ -557,7 +570,7 @@ export default function Configuracion() {
                 </div>
               ))}
               {!isLoading && usuarios.length === 0 ? (
-                <div className="p-4 text-sm text-gray-500">Todavia no hay usuarios registrados.</div>
+                <div className="p-4 text-sm text-gray-500">Todavía no hay usuarios registrados.</div>
               ) : null}
             </div>
           </CardContent>
@@ -574,16 +587,16 @@ export default function Configuracion() {
           </div>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-gray-600">
-          <p>Las categorias y tipos de trabajo siguen usando listas simples en pantalla por ahora.</p>
-          <p>Si quieres, el siguiente paso puede ser convertir tambien esas listas a catalogos reales administrables.</p>
+          <p>Las categorías y tipos de trabajo siguen usando listas simples en pantalla por ahora.</p>
+          <p>Si quieres, el siguiente paso puede ser convertir también esas listas a catálogos reales administrables.</p>
         </CardContent>
       </Card>
 
       <Modal isOpen={isUserModalOpen} onClose={closeUserModal} title={editingSystemUser ? 'Editar usuario' : 'Nuevo usuario'} size="md">
         <form onSubmit={handleGuardarSystemUser} className="space-y-4">
           <Input label="Nombre completo" value={userForm.nombre} onChange={(e) => setUserForm({ ...userForm, nombre: e.target.value })} required />
-          <Input label="Correo electronico" type="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} required />
-          <Input label="Telefono" value={userForm.telefono} onChange={(e) => setUserForm({ ...userForm, telefono: e.target.value })} />
+          <Input label="Correo electrónico" type="email" value={userForm.email} onChange={(e) => setUserForm({ ...userForm, email: e.target.value })} required />
+          <Input label="Teléfono" value={userForm.telefono} onChange={(e) => setUserForm({ ...userForm, telefono: e.target.value })} />
           {!editingSystemUser ? (
             <Input label="Contraseña inicial" type="password" value={userForm.password} onChange={(e) => setUserForm({ ...userForm, password: e.target.value })} required />
           ) : null}

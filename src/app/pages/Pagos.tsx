@@ -116,7 +116,7 @@ export default function Pagos() {
     exportRowsToExcel(
       'pagos-filtrados',
       'Pagos',
-      ['Fecha', 'Cliente', 'Trabajo', 'Monto', 'Metodo', 'Tipo'],
+      ['Fecha', 'Cliente', 'Trabajo', 'Monto', 'Método', 'Tipo'],
       filteredPagos.map((pago) => [
         formatDate(pago.fecha),
         pago.cliente,
@@ -150,7 +150,7 @@ export default function Pagos() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total cobrado</p><p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalRango)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><TrendingUp className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Adelantos</p><p className="text-2xl font-bold text-blue-600 mt-1">{formatCurrency(adelantos)}</p></div><div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><CreditCard className="w-6 h-6 text-blue-600" /></div></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Adelantos</p><p className="mt-1 text-2xl font-bold text-[var(--brand-600)]">{formatCurrency(adelantos)}</p></div><div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--brand-100)]"><CreditCard className="w-6 h-6 text-[var(--brand-600)]" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Pagos finales</p><p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(finales)}</p></div><div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center"><CreditCard className="w-6 h-6 text-emerald-600" /></div></div></CardContent></Card>
       </div>
 
@@ -164,7 +164,7 @@ export default function Pagos() {
                 placeholder="Buscar por cliente o trabajo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
             <Select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} options={[['todos','Todos'],['ADELANTO','Adelanto'],['PARCIAL','Parcial'],['FINAL','Final']].map(([value,label]) => ({ value, label }))} />
@@ -186,7 +186,7 @@ export default function Pagos() {
                   onClick={() => setFiltroMetodo(value)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     filtroMetodo === value
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]'
                       : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -241,7 +241,7 @@ export default function Pagos() {
           <Select label="Trabajo asociado" helperText="Elige el trabajo al que corresponde este pago." value={pagoData.trabajoId} onChange={(e) => setPagoData({ ...pagoData, trabajoId: e.target.value })} options={trabajoOptions} required />
           <Input label="Monto" helperText="Escribe exactamente lo que el cliente pago hoy." type="number" step="0.01" value={pagoData.monto} onChange={(e) => setPagoData({ ...pagoData, monto: e.target.value })} placeholder="0.00" required />
           <Select label="Método de pago" helperText="Sirve para diferenciar efectivo, transferencia, Yape u otros medios." value={pagoData.metodo} onChange={(e) => setPagoData({ ...pagoData, metodo: e.target.value })} options={[{ value: 'EFECTIVO', label: 'Efectivo' }, { value: 'TRANSFERENCIA', label: 'Transferencia' }, { value: 'TARJETA', label: 'Tarjeta' }, { value: 'YAPE', label: 'Yape' }, { value: 'PLIN', label: 'Plin' }]} />
-          <Select label="Tipo de pago" helperText="Usa adelanto si recien empieza, parcial si falta cobrar y final cuando ya se cancelo todo." value={pagoData.tipo} onChange={(e) => setPagoData({ ...pagoData, tipo: e.target.value })} options={[{ value: 'ADELANTO', label: 'Adelanto' }, { value: 'PARCIAL', label: 'Parcial' }, { value: 'FINAL', label: 'Final' }]} />
+          <Select label="Tipo de pago" helperText="Usa adelanto si recién empieza, parcial si falta cobrar y final cuando ya se canceló todo." value={pagoData.tipo} onChange={(e) => setPagoData({ ...pagoData, tipo: e.target.value })} options={[{ value: 'ADELANTO', label: 'Adelanto' }, { value: 'PARCIAL', label: 'Parcial' }, { value: 'FINAL', label: 'Final' }]} />
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">Cancelar</Button>
             <Button type="submit" className="flex-1" disabled={isSaving}>{isSaving ? 'Guardando...' : 'Registrar'}</Button>

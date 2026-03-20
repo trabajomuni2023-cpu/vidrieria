@@ -198,7 +198,7 @@ export default function TrabajoDetalle() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"><User className="w-5 h-5 text-blue-600" /></div><div><p className="text-xs text-gray-600 mb-1">Cliente</p><p className="text-sm font-medium text-gray-900">{trabajo.cliente}</p></div></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--brand-100)]"><User className="w-5 h-5 text-[var(--brand-600)]" /></div><div><p className="text-xs text-gray-600 mb-1">Cliente</p><p className="text-sm font-medium text-gray-900">{trabajo.cliente}</p></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"><Calendar className="w-5 h-5 text-green-600" /></div><div><p className="text-xs text-gray-600 mb-1">Fecha entrega</p><p className="text-sm font-medium text-gray-900">{trabajo.fechaEntrega ? formatDate(trabajo.fechaEntrega) : '-'}</p></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0"><FileText className="w-5 h-5 text-purple-600" /></div><div><p className="text-xs text-gray-600 mb-1">Boleta</p><p className="text-sm font-medium text-gray-900">{trabajo.boleta || '-'}</p></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0"><CreditCard className="w-5 h-5 text-red-600" /></div><div><p className="text-xs text-gray-600 mb-1">Saldo pendiente</p><p className="text-sm font-medium text-red-600">{formatCurrency(trabajo.saldo)}</p></div></div></CardContent></Card>
@@ -213,9 +213,9 @@ export default function TrabajoDetalle() {
                 <div><p className="text-xs text-gray-600 mb-1">Tipo de trabajo</p><p className="text-sm text-gray-900">{trabajo.tipoTrabajo}</p></div>
                 <div><p className="text-xs text-gray-600 mb-1">Fecha de registro</p><p className="text-sm text-gray-900">{formatDate(trabajo.fecha)}</p></div>
               </div>
-              <div><p className="text-xs text-gray-600 mb-1">Descripcion completa</p><p className="text-sm text-gray-900">{trabajo.descripcion}</p></div>
-              <div className="flex items-start gap-3"><Phone className="w-5 h-5 text-gray-400 mt-0.5" /><div><p className="text-xs text-gray-600 mb-1">Telefono</p><p className="text-sm text-gray-900">{trabajo.telefono}</p></div></div>
-              <div className="flex items-start gap-3"><MapPin className="w-5 h-5 text-gray-400 mt-0.5" /><div><p className="text-xs text-gray-600 mb-1">Direccion de instalacion</p><p className="text-sm text-gray-900">{trabajo.direccionInstalacion || trabajo.direccion}</p></div></div>
+              <div><p className="text-xs text-gray-600 mb-1">Descripción completa</p><p className="text-sm text-gray-900">{trabajo.descripcion}</p></div>
+              <div className="flex items-start gap-3"><Phone className="w-5 h-5 text-gray-400 mt-0.5" /><div><p className="text-xs text-gray-600 mb-1">Teléfono</p><p className="text-sm text-gray-900">{trabajo.telefono}</p></div></div>
+              <div className="flex items-start gap-3"><MapPin className="w-5 h-5 text-gray-400 mt-0.5" /><div><p className="text-xs text-gray-600 mb-1">Dirección de instalación</p><p className="text-sm text-gray-900">{trabajo.direccionInstalacion || trabajo.direccion}</p></div></div>
               {trabajo.observaciones ? <div><p className="text-xs text-gray-600 mb-1">Observaciones</p><p className="text-sm text-gray-900 bg-amber-50 border border-amber-200 p-3 rounded-lg">{trabajo.observaciones}</p></div> : null}
             </CardContent>
           </Card>
@@ -223,7 +223,7 @@ export default function TrabajoDetalle() {
           <Card>
             <CardHeader><CardTitle>Materiales utilizados</CardTitle></CardHeader>
             <CardContent>
-              {trabajo.materiales.length === 0 ? <div className="py-8 text-center text-sm text-gray-500">Este trabajo todavia no tiene materiales registrados.</div> : (
+              {trabajo.materiales.length === 0 ? <div className="py-8 text-center text-sm text-gray-500">Este trabajo todavía no tiene materiales registrados.</div> : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-200"><tr><th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th><th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cantidad</th><th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Unidad</th></tr></thead>
@@ -245,10 +245,10 @@ export default function TrabajoDetalle() {
           <Card>
             <CardHeader><CardTitle>Historial de pagos</CardTitle></CardHeader>
             <CardContent>
-              {trabajo.pagosHistorial.length === 0 ? <div className="py-8 text-center text-sm text-gray-500">Este trabajo todavia no tiene pagos registrados.</div> : (
+              {trabajo.pagosHistorial.length === 0 ? <div className="py-8 text-center text-sm text-gray-500">Este trabajo todavía no tiene pagos registrados.</div> : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200"><tr><th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th><th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th><th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th><th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Metodo</th></tr></thead>
+                    <thead className="bg-gray-50 border-b border-gray-200"><tr><th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th><th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th><th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th><th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Método</th></tr></thead>
                     <tbody className="divide-y divide-gray-200">
                       {trabajo.pagosHistorial.map((pago) => (
                         <tr key={pago.id} className="hover:bg-gray-50">
@@ -290,10 +290,10 @@ export default function TrabajoDetalle() {
 
       <Modal isOpen={isModalPagoOpen} onClose={() => setIsModalPagoOpen(false)} title="Registrar pago" size="md">
         <form onSubmit={handleRegistrarPago} className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg"><p className="text-sm text-gray-700"><span className="font-medium">Saldo pendiente: </span><span className="text-xl font-bold text-red-600">{formatCurrency(trabajo.saldo)}</span></p></div>
-          <Input label="Monto" type="number" value={pagoData.monto} onChange={(event) => setPagoData({ ...pagoData, monto: event.target.value })} placeholder="0.00" required />
-          <Select label="Metodo de pago" value={pagoData.metodo} onChange={(event) => setPagoData({ ...pagoData, metodo: event.target.value })} options={[{ value: 'EFECTIVO', label: 'Efectivo' }, { value: 'TRANSFERENCIA', label: 'Transferencia' }, { value: 'TARJETA', label: 'Tarjeta' }, { value: 'YAPE', label: 'Yape' }, { value: 'PLIN', label: 'Plin' }]} />
-          <Select label="Tipo de pago" value={pagoData.tipo} onChange={(event) => setPagoData({ ...pagoData, tipo: event.target.value })} options={[{ value: 'ADELANTO', label: 'Adelanto' }, { value: 'PARCIAL', label: 'Parcial' }, { value: 'FINAL', label: 'Final' }]} />
+          <div className="rounded-lg border p-4" style={{ borderColor: 'color-mix(in srgb, var(--brand-100) 90%, white)', background: 'color-mix(in srgb, var(--brand-50) 80%, white)' }}><p className="text-sm text-gray-700"><span className="font-medium">Saldo pendiente: </span><span className="text-xl font-bold text-red-600">{formatCurrency(trabajo.saldo)}</span></p></div>
+          <Input label="Monto" helperText="Ingresa el importe exacto que se está cobrando ahora." type="number" value={pagoData.monto} onChange={(event) => setPagoData({ ...pagoData, monto: event.target.value })} placeholder="0.00" required />
+          <Select label="Método de pago" helperText="Sirve para registrar correctamente caja y reportes." value={pagoData.metodo} onChange={(event) => setPagoData({ ...pagoData, metodo: event.target.value })} options={[{ value: 'EFECTIVO', label: 'Efectivo' }, { value: 'TRANSFERENCIA', label: 'Transferencia' }, { value: 'TARJETA', label: 'Tarjeta' }, { value: 'YAPE', label: 'Yape' }, { value: 'PLIN', label: 'Plin' }]} />
+          <Select label="Tipo de pago" helperText="Usa parcial o final según el saldo que quede pendiente." value={pagoData.tipo} onChange={(event) => setPagoData({ ...pagoData, tipo: event.target.value })} options={[{ value: 'ADELANTO', label: 'Adelanto' }, { value: 'PARCIAL', label: 'Parcial' }, { value: 'FINAL', label: 'Final' }]} />
           <div className="flex gap-3 pt-4"><Button type="button" variant="outline" onClick={() => setIsModalPagoOpen(false)} className="flex-1">Cancelar</Button><Button type="submit" className="flex-1" disabled={isSavingPago}>{isSavingPago ? 'Guardando...' : 'Registrar pago'}</Button></div>
         </form>
       </Modal>
@@ -304,13 +304,13 @@ export default function TrabajoDetalle() {
             <Select label="Cliente" value={form.clienteId} onChange={(event) => setForm({ ...form, clienteId: event.target.value })} options={[{ value: '', label: 'Seleccionar cliente' }, ...clientes.map((cliente) => ({ value: cliente.id, label: cliente.nombre }))]} required />
             <Input label="Tipo de trabajo" value={form.tipoTrabajo} onChange={(event) => setForm({ ...form, tipoTrabajo: event.target.value })} />
           </div>
-          <Textarea label="Descripcion" rows={3} value={form.descripcion} onChange={(event) => setForm({ ...form, descripcion: event.target.value })} required />
+          <Textarea label="Descripción" rows={3} value={form.descripcion} onChange={(event) => setForm({ ...form, descripcion: event.target.value })} required />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Total" type="number" step="0.01" value={form.total} onChange={(event) => setForm({ ...form, total: event.target.value })} required />
             <Input label="Fecha de entrega" type="date" value={form.fechaEntrega} onChange={(event) => setForm({ ...form, fechaEntrega: event.target.value })} />
           </div>
           <Input label="Boleta o comprobante" value={form.comprobanteNumero} onChange={(event) => setForm({ ...form, comprobanteNumero: event.target.value })} />
-          <Input label="Direccion de instalacion" value={form.direccionInstalacion} onChange={(event) => setForm({ ...form, direccionInstalacion: event.target.value })} />
+          <Input label="Dirección de instalación" value={form.direccionInstalacion} onChange={(event) => setForm({ ...form, direccionInstalacion: event.target.value })} />
           <Textarea label="Observaciones" rows={3} value={form.observaciones} onChange={(event) => setForm({ ...form, observaciones: event.target.value })} />
           <div className="flex gap-3 pt-4"><Button type="button" variant="outline" onClick={() => setIsModalEditOpen(false)} className="flex-1">Cancelar</Button><Button type="submit" className="flex-1" disabled={isSavingEdit}>{isSavingEdit ? 'Guardando...' : 'Actualizar'}</Button></div>
         </form>

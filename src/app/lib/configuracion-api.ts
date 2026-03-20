@@ -5,6 +5,8 @@ export interface ConfiguracionNegocio {
   nombreComercial: string;
   moneda: string;
   stockMinimoPorDefecto: number;
+  contentPalette: string;
+  sidebarPalette: string;
 }
 
 export interface UsuarioSistema {
@@ -31,7 +33,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
   }
 
   const data = (await response.json().catch(() => null)) as { message?: string } | null;
-  throw new Error(data?.message || 'Ocurrio un error inesperado.');
+  throw new Error(data?.message || 'Ocurrió un error inesperado.');
 }
 
 export async function getConfiguracion() {
@@ -46,6 +48,8 @@ export async function updateConfiguracion(payload: {
   nombreComercial: string;
   moneda: string;
   stockMinimoPorDefecto: string;
+  contentPalette?: string;
+  sidebarPalette?: string;
 }) {
   const response = await fetch('/api/configuracion', {
     method: 'PUT',

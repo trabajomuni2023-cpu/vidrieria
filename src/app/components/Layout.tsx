@@ -18,6 +18,8 @@ import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
 import { clearAuthSession, getAuthSession, type AuthUser } from '../lib/auth';
 import { getMe } from '../lib/auth-api';
+import { getConfiguracion } from '../lib/configuracion-api';
+import { applyThemePreferences, type ThemePaletteId } from '../lib/theme-preferences';
 
 const menuItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -29,7 +31,7 @@ const menuItems = [
   { path: '/dashboard/caja', icon: Wallet, label: 'Caja' },
   { path: '/dashboard/reportes', icon: BarChart3, label: 'Reportes' },
   { path: '/dashboard/calendario', icon: Calendar, label: 'Calendario' },
-  { path: '/dashboard/configuracion', icon: Settings, label: 'Configuracion' },
+  { path: '/dashboard/configuracion', icon: Settings, label: 'Configuración' },
 ];
 
 export default function Layout() {
@@ -41,8 +43,12 @@ export default function Layout() {
   useEffect(() => {
     const syncUser = async () => {
       try {
-        const response = await getMe();
+        const [response, config] = await Promise.all([getMe(), getConfiguracion()]);
         setUser(response.user);
+        applyThemePreferences({
+          contentPaletteId: config.negocio.contentPalette as ThemePaletteId,
+          sidebarPaletteId: config.negocio.sidebarPalette as ThemePaletteId,
+        });
       } catch {
         clearAuthSession();
         navigate('/login');
@@ -79,8 +85,8 @@ export default function Layout() {
               <Package className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="font-semibold text-lg">Sistema de Gestion</h1>
-              <p className="text-xs text-white/70">Vidrieria</p>
+              <h1 className="font-semibold text-lg">Sistema de Gestión</h1>
+              <p className="text-xs text-white/70">Vidriería</p>
             </div>
           </div>
         </div>
@@ -132,7 +138,7 @@ export default function Layout() {
             }}
           >
             <LogOut className="w-5 h-5" />
-            <span>Cerrar sesion</span>
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </aside>

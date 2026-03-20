@@ -72,7 +72,7 @@ export default function Calendario() {
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
   ];
 
-  const dayNames = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   const days = [];
   for (let index = 0; index < startingDayOfWeek; index += 1) {
@@ -163,12 +163,12 @@ export default function Calendario() {
                     key={dateStr}
                     onClick={() => setSelectedDate(dateStr)}
                     className={`
-                      p-2 min-h-20 border rounded-lg text-left transition-all hover:border-blue-500
-                      ${isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}
-                      ${isSelected ? 'ring-2 ring-blue-500 bg-blue-50' : ''}
+                      p-2 min-h-20 border rounded-lg text-left transition-all hover:border-[var(--brand-600)]
+                      ${isToday ? 'border-[var(--brand-600)] bg-[var(--brand-50)]' : 'border-gray-200'}
+                      ${isSelected ? 'ring-2 ring-[var(--brand-600)] bg-[var(--brand-50)]' : ''}
                     `}
                   >
-                    <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                    <div className={`text-sm font-medium mb-1 ${isToday ? 'text-[var(--brand-600)]' : 'text-gray-900'}`}>
                       {day}
                     </div>
                     {eventosDelDia.length > 0 ? (
@@ -176,13 +176,13 @@ export default function Calendario() {
                         {eventosDelDia.slice(0, 2).map((evento) => (
                           <div
                             key={evento.id}
-                            className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded truncate"
+                            className="truncate rounded px-1.5 py-0.5 text-xs bg-[var(--brand-100)] text-[var(--brand-700)]"
                           >
                             {evento.cliente}
                           </div>
                         ))}
                         {eventosDelDia.length > 2 ? (
-                          <div className="text-xs text-gray-500">+{eventosDelDia.length - 2} mas</div>
+                          <div className="text-xs text-gray-500">+{eventosDelDia.length - 2} más</div>
                         ) : null}
                       </div>
                     ) : null}
@@ -196,7 +196,7 @@ export default function Calendario() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {selectedDate ? `Eventos del ${formatDate(selectedDate)}` : 'Proximos eventos'}
+              {selectedDate ? `Eventos del ${formatDate(selectedDate)}` : 'Próximos eventos'}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -206,7 +206,7 @@ export default function Calendario() {
                   {selectedDateEvents.map((evento) => (
                     <div
                       key={evento.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 transition-colors cursor-pointer"
+                      className="cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:border-[var(--brand-600)]"
                       onClick={() => navigate(`/dashboard/trabajos/${evento.id}`)}
                     >
                       <div className="flex items-start justify-between mb-2">
@@ -231,13 +231,13 @@ export default function Calendario() {
                 {proximosEventos.length === 0 ? (
                   <div className="text-center py-8">
                     <CalendarIcon className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500">Todavia no hay trabajos programados</p>
+                    <p className="text-sm text-gray-500">Todavía no hay trabajos programados</p>
                   </div>
                 ) : (
                   proximosEventos.map((evento) => (
                     <div
                       key={evento.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:border-blue-500 transition-colors cursor-pointer"
+                      className="cursor-pointer rounded-lg border border-gray-200 p-4 transition-colors hover:border-[var(--brand-600)]"
                       onClick={() => setSelectedDate(new Date(evento.fechaEntrega || evento.fecha).toISOString().slice(0, 10))}
                     >
                       <div className="flex items-start justify-between mb-2">
@@ -251,7 +251,7 @@ export default function Calendario() {
                         <span className="text-xs text-gray-500">
                           {evento.fechaEntrega ? formatDate(evento.fechaEntrega) : formatDate(evento.fecha)}
                         </span>
-                        <span className="text-xs text-blue-600 font-medium">Ver dia</span>
+                        <span className="text-xs font-medium text-[var(--brand-600)]">Ver día</span>
                       </div>
                     </div>
                   ))
