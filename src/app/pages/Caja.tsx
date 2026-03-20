@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Search, Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { Search, Wallet, TrendingUp, TrendingDown, DollarSign, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { getMovimientosCaja, type MovimientoCaja } from '../lib/caja-api';
 import { toast } from 'sonner';
@@ -24,6 +25,8 @@ export default function Caja() {
   const [movimientos, setMovimientos] = useState<MovimientoCaja[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -55,14 +58,17 @@ export default function Caja() {
     return movimientos.filter((movimiento) => {
       const search = searchTerm.toLowerCase();
       const tipoNormalizado = movimiento.tipo.toLowerCase();
+      const fechaMovimiento = new Date(movimiento.fecha);
       const matchSearch =
         movimiento.descripcion.toLowerCase().includes(search) ||
         (movimiento.referencia || '').toLowerCase().includes(search);
       const matchTipo = filtroTipo === 'todos' || tipoNormalizado === filtroTipo;
+      const matchDesde = !fechaDesde || fechaMovimiento >= new Date(`${fechaDesde}T00:00:00`);
+      const matchHasta = !fechaHasta || fechaMovimiento <= new Date(`${fechaHasta}T23:59:59`);
 
-      return matchSearch && matchTipo;
+      return matchSearch && matchTipo && matchDesde && matchHasta;
     });
-  }, [filtroTipo, movimientos, searchTerm]);
+  }, [fechaDesde, fechaHasta, filtroTipo, movimientos, searchTerm]);
 
   const startDay = getStartOfDay();
   const startWeek = getStartOfWeek();
@@ -83,22 +89,37 @@ export default function Caja() {
     .reduce((sum, movimiento) => sum + movimiento.monto, 0);
   const balanceSemana = ingresosSemana - salidasSemana;
 
+  const ingresosRango = filteredMovimientos
+    .filter((movimiento) => movimiento.tipo === 'INGRESO')
+    .reduce((sum, movimiento) => sum + movimiento.monto, 0);
+  const salidasRango = filteredMovimientos
+    .filter((movimiento) => movimiento.tipo === 'SALIDA')
+    .reduce((sum, movimiento) => sum + movimiento.monto, 0);
+  const balanceRango = ingresosRango - salidasRango;
+
   const saldoCaja = movimientos.reduce((sum, movimiento) => {
     return movimiento.tipo === 'INGRESO' ? sum + movimiento.monto : sum - movimiento.monto;
   }, 0);
+
+  function handleClearFilters() {
+    setSearchTerm('');
+    setFiltroTipo('todos');
+    setFechaDesde('');
+    setFechaHasta('');
+  }
 
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Caja</h1>
-        <p className="text-sm text-gray-600 mt-1">Control de ingresos y salidas</p>
+        <p className="mt-1 text-sm text-gray-600">Control de ingresos y salidas</p>
       </div>
 
       <Card className="border-none" style={{ backgroundImage: 'linear-gradient(135deg, var(--brand-600), var(--brand-700))' }}>
         <CardContent className="p-8">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-              <Wallet className="w-8 h-8 text-white" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
+              <Wallet className="h-8 w-8 text-white" />
             </div>
             <div className="flex-1">
               <p className="mb-1 text-sm text-white/80">Saldo en caja</p>
@@ -113,42 +134,32 @@ export default function Caja() {
           <CardTitle>Balance del día</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <TrendingUp className="w-6 h-6 text-green-600" />
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-green-100">
+                <TrendingUp className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-600 mb-1">Ingresos</p>
+                <p className="mb-1 text-xs text-gray-600">Ingresos</p>
                 <p className="text-2xl font-bold text-green-600">{formatCurrency(ingresosDia)}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                <TrendingDown className="w-6 h-6 text-red-600" />
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-red-100">
+                <TrendingDown className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-600 mb-1">Gastos</p>
+                <p className="mb-1 text-xs text-gray-600">Gastos</p>
                 <p className="text-2xl font-bold text-red-600">{formatCurrency(salidasDia)}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div
-                className={`w-12 h-12 ${
-                  balanceDia >= 0 ? 'bg-[var(--brand-100)]' : 'bg-red-100'
-                } rounded-lg flex items-center justify-center flex-shrink-0`}
-              >
-                <DollarSign
-                  className={`w-6 h-6 ${balanceDia >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'}`}
-                />
+              <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg ${balanceDia >= 0 ? 'bg-[var(--brand-100)]' : 'bg-red-100'}`}>
+                <DollarSign className={`h-6 w-6 ${balanceDia >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'}`} />
               </div>
               <div>
-                <p className="text-xs text-gray-600 mb-1">Balance neto</p>
-                <p
-                  className={`text-2xl font-bold ${
-                    balanceDia >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'
-                  }`}
-                >
+                <p className="mb-1 text-xs text-gray-600">Balance neto</p>
+                <p className={`text-2xl font-bold ${balanceDia >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'}`}>
                   {formatCurrency(balanceDia)}
                 </p>
               </div>
@@ -157,28 +168,47 @@ export default function Caja() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-600">Ingresos semanales</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(ingresosSemana)}</p>
+            <p className="mt-1 text-2xl font-bold text-green-600">{formatCurrency(ingresosSemana)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-600">Gastos semanales</p>
-            <p className="text-2xl font-bold text-red-600 mt-1">{formatCurrency(salidasSemana)}</p>
+            <p className="mt-1 text-2xl font-bold text-red-600">{formatCurrency(salidasSemana)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-600">Balance semanal</p>
-            <p
-              className={`text-2xl font-bold mt-1 ${
-                balanceSemana >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'
-              }`}
-            >
+            <p className={`mt-1 text-2xl font-bold ${balanceSemana >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'}`}>
               {formatCurrency(balanceSemana)}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-sm text-gray-600">Ingresos del rango</p>
+            <p className="mt-1 text-2xl font-bold text-green-600">{formatCurrency(ingresosRango)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-sm text-gray-600">Gastos del rango</p>
+            <p className="mt-1 text-2xl font-bold text-red-600">{formatCurrency(salidasRango)}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-sm text-gray-600">Balance del rango</p>
+            <p className={`mt-1 text-2xl font-bold ${balanceRango >= 0 ? 'text-[var(--brand-600)]' : 'text-red-600'}`}>
+              {formatCurrency(balanceRango)}
             </p>
           </CardContent>
         </Card>
@@ -186,45 +216,42 @@ export default function Caja() {
 
       <Card>
         <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="flex-1 relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <div className="relative w-full flex-1">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Buscar movimientos..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
+                className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)]"
               />
             </div>
+            <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full sm:w-auto" />
+            <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full sm:w-auto" />
+            <button
+              onClick={handleClearFilters}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Limpiar
+            </button>
             <div className="flex gap-2">
               <button
                 onClick={() => setFiltroTipo('todos')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filtroTipo === 'todos'
-                    ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'todos' ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
               >
                 Todos
               </button>
               <button
                 onClick={() => setFiltroTipo('ingreso')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filtroTipo === 'ingreso'
-                    ? 'bg-green-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'ingreso' ? 'bg-green-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
               >
                 Ingresos
               </button>
               <button
                 onClick={() => setFiltroTipo('salida')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filtroTipo === 'salida'
-                    ? 'bg-red-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'salida' ? 'bg-red-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
               >
                 Salidas
               </button>
@@ -240,38 +267,30 @@ export default function Caja() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referencia</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Fecha</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Tipo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Descripción</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">Monto</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">Referencia</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {filteredMovimientos.map((movimiento) => (
                   <tr key={movimiento.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {formatDate(movimiento.fecha)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">{formatDate(movimiento.fecha)}</td>
+                    <td className="whitespace-nowrap px-6 py-4">
                       <Badge variant={movimiento.tipo === 'INGRESO' ? 'success' : 'danger'}>
                         {movimiento.tipo === 'INGRESO' ? 'Ingreso' : 'Salida'}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">{movimiento.descripcion}</td>
-                    <td
-                      className={`px-6 py-4 whitespace-nowrap text-sm text-right font-bold ${
-                        movimiento.tipo === 'INGRESO' ? 'text-green-600' : 'text-red-600'
-                      }`}
-                    >
+                    <td className={`whitespace-nowrap px-6 py-4 text-right text-sm font-bold ${movimiento.tipo === 'INGRESO' ? 'text-green-600' : 'text-red-600'}`}>
                       {movimiento.tipo === 'INGRESO' ? '+' : '-'}
                       {formatCurrency(movimiento.monto)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {movimiento.referencia || '-'}
-                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{movimiento.referencia || '-'}</td>
                   </tr>
                 ))}
                 {!isLoading && filteredMovimientos.length === 0 ? (
