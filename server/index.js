@@ -120,7 +120,7 @@ async function ensureConfiguracionNegocio() {
 
   return prisma.configuracionNegocio.create({
     data: {
-      nombreComercial: 'VidrierÃ­a Cristal',
+        nombreComercial: 'Vidriería Cristal',
       moneda: 'PEN',
       logoUrl: null,
       contentPalette: 'oceano',
@@ -825,8 +825,8 @@ app.post('/api/auth/login', async (req, res) => {
       user: safeUser,
     });
   } catch (error) {
-    console.error('Error al iniciar sesiÃ³n:', error);
-    res.status(500).json({ message: 'No se pudo iniciar sesiÃ³n.' });
+    console.error('Error al iniciar sesión:', error);
+    res.status(500).json({ message: 'No se pudo iniciar sesión.' });
   }
 });
 
@@ -851,8 +851,8 @@ app.get('/api/auth/me', async (req, res) => {
       user: sanitizeUsuario(usuario),
     });
   } catch (error) {
-    console.error('Error al validar sesiÃ³n:', error);
-    res.status(500).json({ message: 'No se pudo validar la sesiÃ³n.' });
+    console.error('Error al validar sesión:', error);
+    res.status(500).json({ message: 'No se pudo validar la sesión.' });
   }
 });
 
@@ -1035,7 +1035,7 @@ app.get('/api/configuracion', async (req, res) => {
     });
   } catch (error) {
     console.error('Error al cargar configuracion:', error);
-    res.status(500).json({ message: 'No se pudo cargar la configuraciÃ³n.' });
+      res.status(500).json({ message: 'No se pudo cargar la configuración.' });
   }
 });
 
@@ -1048,7 +1048,7 @@ app.put('/api/configuracion', async (req, res) => {
     }
 
     if (usuario.rol !== 'ADMIN') {
-      return res.status(403).json({ message: 'No tienes permisos para editar la configuraciÃ³n.' });
+        return res.status(403).json({ message: 'No tienes permisos para editar la configuración.' });
     }
 
     const current = await ensureConfiguracionNegocio();
@@ -1073,13 +1073,24 @@ app.put('/api/configuracion', async (req, res) => {
       return res.status(400).json({ message: 'El stock mínimo debe ser un número válido.' });
     }
 
-    const configuracion = await prisma.configuracionNegocio.update({
-      where: { id: current.id },
-      data: {
-        nombreComercial: String(nombreComercial).trim(),
-        moneda: moneda || 'PEN',
-        logoUrl: logoUrl ? String(logoUrl).trim() : null,
-        contentPalette: contentPalette || current.contentPalette || 'oceano',
+      const configuracion = await prisma.configuracionNegocio.upsert({
+        where: { id: current.id },
+        create: {
+          id: current.id,
+          nombreComercial: String(nombreComercial).trim(),
+          moneda: moneda || 'PEN',
+          logoUrl: logoUrl ? String(logoUrl).trim() : null,
+          contentPalette: contentPalette || current.contentPalette || 'oceano',
+          sidebarPalette: sidebarPalette || current.sidebarPalette || 'grafito',
+          contentCustomColor: contentCustomColor ? String(contentCustomColor).trim() : null,
+          sidebarCustomColor: sidebarCustomColor ? String(sidebarCustomColor).trim() : null,
+          stockMinimoPorDefecto: stockMinimo,
+        },
+        data: {
+          nombreComercial: String(nombreComercial).trim(),
+          moneda: moneda || 'PEN',
+          logoUrl: logoUrl ? String(logoUrl).trim() : null,
+          contentPalette: contentPalette || current.contentPalette || 'oceano',
         sidebarPalette: sidebarPalette || current.sidebarPalette || 'grafito',
         contentCustomColor: contentCustomColor ? String(contentCustomColor).trim() : null,
         sidebarCustomColor: sidebarCustomColor ? String(sidebarCustomColor).trim() : null,
@@ -1090,7 +1101,7 @@ app.put('/api/configuracion', async (req, res) => {
     res.json({ negocio: configuracion });
   } catch (error) {
     console.error('Error al actualizar configuracion:', error);
-    res.status(500).json({ message: 'No se pudo actualizar la configuraciÃ³n.' });
+    res.status(500).json({ message: 'No se pudo actualizar la configuración.' });
   }
 });
 

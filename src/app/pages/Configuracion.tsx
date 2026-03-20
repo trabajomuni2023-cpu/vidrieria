@@ -144,15 +144,14 @@ export default function Configuracion() {
 
     try {
       await updateConfiguracion({
-        ...datosNegocio,
-        contentPalette,
-        sidebarPalette,
-        contentCustomColor: contentPalette === 'personalizado' ? contentCustomColor : '',
-        sidebarCustomColor: sidebarPalette === 'personalizado' ? sidebarCustomColor : '',
+        nombreComercial: datosNegocio.nombreComercial,
+        moneda: datosNegocio.moneda,
+        logoUrl: datosNegocio.logoUrl,
+        stockMinimoPorDefecto: datosNegocio.stockMinimoPorDefecto,
       });
-      toast.success('Configuración visual y datos del negocio actualizados');
+      toast.success('Datos del negocio actualizados');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'No se pudo actualizar el negocio.');
+      toast.error(error instanceof Error ? error.message : 'No se pudo actualizar la configuración.');
     } finally {
       setIsSavingNegocio(false);
     }
