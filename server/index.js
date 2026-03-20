@@ -1,4 +1,4 @@
-import cors from 'cors';
+﻿import cors from 'cors';
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'node:crypto';
@@ -120,7 +120,7 @@ async function ensureConfiguracionNegocio() {
 
   return prisma.configuracionNegocio.create({
     data: {
-      nombreComercial: 'Vidriería Cristal',
+      nombreComercial: 'VidrierÃ­a Cristal',
       moneda: 'PEN',
       logoUrl: null,
       contentPalette: 'oceano',
@@ -178,7 +178,7 @@ function mapProducto(producto) {
   return {
     id: producto.id,
     nombre: producto.nombre,
-    categoria: producto.categoria?.nombre || 'Sin categoría',
+    categoria: producto.categoria?.nombre || 'Sin categorÃ­a',
     unidad: producto.unidad,
     stock: Number(producto.stockActual),
     stockMinimo: Number(producto.stockMinimo),
@@ -325,7 +325,7 @@ function mapGasto(gasto) {
     id: gasto.id,
     fecha: gasto.fecha,
     descripcion: gasto.descripcion,
-    categoria: gasto.categoria?.nombre || 'Sin categoría',
+    categoria: gasto.categoria?.nombre || 'Sin categorÃ­a',
     monto: Number(gasto.monto),
     referencia: gasto.referencia,
     observacion: gasto.observacion,
@@ -799,7 +799,7 @@ app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body ?? {};
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email y contraseña son obligatorios.' });
+      return res.status(400).json({ message: 'Email y contraseÃ±a son obligatorios.' });
     }
 
     const usuario = await prisma.usuario.findUnique({
@@ -825,8 +825,8 @@ app.post('/api/auth/login', async (req, res) => {
       user: safeUser,
     });
   } catch (error) {
-    console.error('Error al iniciar sesión:', error);
-    res.status(500).json({ message: 'No se pudo iniciar sesión.' });
+    console.error('Error al iniciar sesiÃ³n:', error);
+    res.status(500).json({ message: 'No se pudo iniciar sesiÃ³n.' });
   }
 });
 
@@ -851,8 +851,8 @@ app.get('/api/auth/me', async (req, res) => {
       user: sanitizeUsuario(usuario),
     });
   } catch (error) {
-    console.error('Error al validar sesión:', error);
-    res.status(500).json({ message: 'No se pudo validar la sesión.' });
+    console.error('Error al validar sesiÃ³n:', error);
+    res.status(500).json({ message: 'No se pudo validar la sesiÃ³n.' });
   }
 });
 
@@ -897,15 +897,15 @@ app.patch('/api/auth/password', async (req, res) => {
     const { currentPassword, newPassword } = req.body ?? {};
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'La contraseña actual y la nueva son obligatorias.' });
+      return res.status(400).json({ message: 'La contraseÃ±a actual y la nueva son obligatorias.' });
     }
 
     if (usuario.passwordHash !== hashPassword(String(currentPassword))) {
-      return res.status(400).json({ message: 'La contraseña actual no es correcta.' });
+      return res.status(400).json({ message: 'La contraseÃ±a actual no es correcta.' });
     }
 
     if (String(newPassword).length < 6) {
-      return res.status(400).json({ message: 'La nueva contraseña debe tener al menos 6 caracteres.' });
+      return res.status(400).json({ message: 'La nueva contraseÃ±a debe tener al menos 6 caracteres.' });
     }
 
     await prisma.usuario.update({
@@ -917,8 +917,8 @@ app.patch('/api/auth/password', async (req, res) => {
 
     res.json({ ok: true });
   } catch (error) {
-    console.error('Error al cambiar contraseña:', error);
-    res.status(500).json({ message: 'No se pudo cambiar la contraseña.' });
+    console.error('Error al cambiar contraseÃ±a:', error);
+    res.status(500).json({ message: 'No se pudo cambiar la contraseÃ±a.' });
   }
 });
 
@@ -962,7 +962,7 @@ app.post('/api/usuarios', async (req, res) => {
     const { nombre, email, telefono, password, rol } = req.body ?? {};
 
     if (!nombre || !email || !password) {
-      return res.status(400).json({ message: 'Nombre, email y contraseña son obligatorios.' });
+      return res.status(400).json({ message: 'Nombre, email y contraseÃ±a son obligatorios.' });
     }
 
     const nuevoUsuario = await prisma.usuario.create({
@@ -1035,7 +1035,7 @@ app.get('/api/configuracion', async (req, res) => {
     });
   } catch (error) {
     console.error('Error al cargar configuracion:', error);
-    res.status(500).json({ message: 'No se pudo cargar la configuración.' });
+    res.status(500).json({ message: 'No se pudo cargar la configuraciÃ³n.' });
   }
 });
 
@@ -1048,7 +1048,7 @@ app.put('/api/configuracion', async (req, res) => {
     }
 
     if (usuario.rol !== 'ADMIN') {
-      return res.status(403).json({ message: 'No tienes permisos para editar la configuración.' });
+      return res.status(403).json({ message: 'No tienes permisos para editar la configuraciÃ³n.' });
     }
 
     const current = await ensureConfiguracionNegocio();
@@ -1070,7 +1070,7 @@ app.put('/api/configuracion', async (req, res) => {
     }
 
     if (!Number.isFinite(stockMinimo) || stockMinimo < 0) {
-      return res.status(400).json({ message: 'El stock mÃ­nimo debe ser un nÃºmero vÃ¡lido.' });
+      return res.status(400).json({ message: 'El stock mínimo debe ser un número válido.' });
     }
 
     const configuracion = await prisma.configuracionNegocio.update({
@@ -1090,7 +1090,7 @@ app.put('/api/configuracion', async (req, res) => {
     res.json({ negocio: configuracion });
   } catch (error) {
     console.error('Error al actualizar configuracion:', error);
-    res.status(500).json({ message: 'No se pudo actualizar la configuración.' });
+    res.status(500).json({ message: 'No se pudo actualizar la configuraciÃ³n.' });
   }
 });
 
@@ -1390,7 +1390,7 @@ app.post('/api/cotizaciones', async (req, res) => {
     } = req.body ?? {};
 
     if (!clienteId || !fechaVigencia || !descripcion || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'Cliente, vigencia, descripción e ítems son obligatorios.' });
+      return res.status(400).json({ message: 'Cliente, vigencia, descripciÃ³n e Ã­tems son obligatorios.' });
     }
 
     const cliente = await prisma.cliente.findUnique({
@@ -1477,7 +1477,7 @@ app.put('/api/cotizaciones/:id', async (req, res) => {
     } = req.body ?? {};
 
     if (!clienteId || !fechaVigencia || !descripcion || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'Cliente, vigencia, descripción e ítems son obligatorios.' });
+      return res.status(400).json({ message: 'Cliente, vigencia, descripciÃ³n e Ã­tems son obligatorios.' });
     }
 
     const cotizacionExistente = await prisma.cotizacion.findUnique({
@@ -2620,7 +2620,7 @@ app.post('/api/clientes', async (req, res) => {
     const { nombre, telefono, direccion, documento, observacion } = req.body ?? {};
 
     if (!nombre || !telefono || !direccion) {
-      return res.status(400).json({ message: 'Nombre, teléfono y dirección son obligatorios.' });
+      return res.status(400).json({ message: 'Nombre, telÃ©fono y direcciÃ³n son obligatorios.' });
     }
 
     const cliente = await prisma.cliente.create({
@@ -2658,7 +2658,7 @@ app.put('/api/clientes/:id', async (req, res) => {
     const { nombre, telefono, direccion, documento, observacion } = req.body ?? {};
 
     if (!nombre || !telefono || !direccion) {
-      return res.status(400).json({ message: 'Nombre, teléfono y dirección son obligatorios.' });
+      return res.status(400).json({ message: 'Nombre, telÃ©fono y direcciÃ³n son obligatorios.' });
     }
 
     const clienteExistente = await prisma.cliente.findUnique({
@@ -2751,3 +2751,4 @@ if (process.env.VERCEL !== '1') {
     console.log(`API lista en http://localhost:${port}`);
   });
 }
+

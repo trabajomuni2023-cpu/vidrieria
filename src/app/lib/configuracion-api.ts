@@ -1,4 +1,4 @@
-import { getAuthSession, setAuthSession, type AuthUser } from './auth';
+﻿import { getAuthSession, setAuthSession, type AuthUser } from './auth';
 
 export interface ConfiguracionNegocio {
   id: string;
@@ -136,3 +136,4 @@ export async function updateUsuario(
 
   return parseResponse<UsuarioSistema>(response);
 }
+
