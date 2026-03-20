@@ -29,14 +29,19 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center p-4">
+    <div
+      className="flex min-h-screen items-center justify-center p-4"
+      style={{
+        backgroundImage: 'linear-gradient(135deg, var(--hero-from), color-mix(in srgb, var(--hero-via) 78%, #0f172a), var(--hero-to))',
+      }}
+    >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-600 rounded-2xl mb-4">
+          <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-[var(--brand-600)] text-[var(--brand-contrast)] shadow-lg">
             <Package className="w-12 h-12 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Sistema de Gestion</h1>
-          <p className="text-blue-200">Vidrieria</p>
+          <p className="text-white/75">Vidrieria</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">
@@ -55,7 +60,7 @@ export default function Login() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="Ingrese su email"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
                 />
               </div>
             </div>
@@ -69,12 +74,19 @@ export default function Login() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Ingrese su contrasena"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
                 />
               </div>
             </div>
 
-            <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            <div
+              className="rounded-lg px-4 py-3 text-sm"
+              style={{
+                border: '1px solid color-mix(in srgb, var(--brand-100) 90%, white)',
+                background: 'color-mix(in srgb, var(--brand-50) 80%, white)',
+                color: 'var(--brand-700)',
+              }}
+            >
               Usuario inicial: <strong>admin@vidrieria.com</strong><br />
               Clave inicial: <strong>admin123</strong>
             </div>
@@ -85,7 +97,7 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-sm text-blue-200 mt-6">Version 1.0.0 - 2026</p>
+        <p className="mt-6 text-center text-sm text-white/75">Version 1.0.0 - 2026</p>
       </div>
     </div>
   );

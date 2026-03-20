@@ -15,7 +15,7 @@ const badgeVariants = cva(
         success: "border-green-200 bg-green-100 text-green-700",
         warning: "border-amber-200 bg-amber-100 text-amber-700",
         danger: "border-red-200 bg-red-100 text-red-700",
-        info: "border-blue-200 bg-blue-100 text-blue-700",
+        info: "border-[color:var(--brand-100)] bg-[var(--brand-100)] text-[var(--brand-700)]",
       },
     },
     defaultVariants: {

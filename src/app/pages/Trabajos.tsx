@@ -219,7 +219,7 @@ export default function Trabajos() {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">Total</p><p className="text-2xl font-bold text-gray-900">{stats.total}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">Pendientes</p><p className="text-2xl font-bold text-amber-600">{stats.pendientes}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">En proceso</p><p className="text-2xl font-bold text-blue-600">{stats.enProceso}</p></CardContent></Card>
+        <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">En proceso</p><p className="text-2xl font-bold text-[var(--brand-600)]">{stats.enProceso}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">Terminados</p><p className="text-2xl font-bold text-green-600">{stats.terminados}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">Entregados</p><p className="text-2xl font-bold text-green-700">{stats.entregados}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">Saldo total</p><p className="text-lg font-bold text-red-600">{formatCurrency(stats.totalSaldo)}</p></CardContent></Card>
@@ -235,7 +235,7 @@ export default function Trabajos() {
                 placeholder="Buscar por cliente, descripcion o boleta..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
             <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full lg:w-auto" />
@@ -246,7 +246,7 @@ export default function Trabajos() {
             </Button>
             <div className="flex gap-2 flex-wrap">
               {[['todos', 'Todos'], ['PENDIENTE', 'Pendientes'], ['EN_PROCESO', 'En proceso'], ['TERMINADO', 'Terminados'], ['ENTREGADO', 'Entregados']].map(([value, label]) => (
-                <button key={value} onClick={() => setFiltroEstado(value)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filtroEstado === value ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                <button key={value} onClick={() => setFiltroEstado(value)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filtroEstado === value ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
                   {label}
                 </button>
               ))}
@@ -259,7 +259,7 @@ export default function Trabajos() {
         <CardContent className="p-4">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div><p className="text-xs text-gray-500">Trabajos en rango</p><p className="text-lg font-semibold text-gray-900">{stats.total}</p></div>
-            <div><p className="text-xs text-gray-500">Monto total</p><p className="text-lg font-semibold text-blue-600">{formatCurrency(stats.totalMonto)}</p></div>
+            <div><p className="text-xs text-gray-500">Monto total</p><p className="text-lg font-semibold text-[var(--brand-600)]">{formatCurrency(stats.totalMonto)}</p></div>
             <div><p className="text-xs text-gray-500">Pendientes</p><p className="text-lg font-semibold text-amber-600">{stats.pendientes}</p></div>
             <div><p className="text-xs text-gray-500">Terminados</p><p className="text-lg font-semibold text-green-600">{stats.terminados}</p></div>
             <div><p className="text-xs text-gray-500">Entregados</p><p className="text-lg font-semibold text-green-700">{stats.entregados}</p></div>
@@ -326,7 +326,7 @@ export default function Trabajos() {
           <div className="py-6 text-sm text-gray-600">Necesitas registrar al menos un cliente antes de crear un trabajo.</div>
         ) : (
           <form onSubmit={handleSaveTrabajo} className="space-y-4">
-            <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'color-mix(in srgb, var(--brand-100) 90%, white)', background: 'color-mix(in srgb, var(--brand-50) 80%, white)', color: 'var(--brand-700)' }}>
               Llena primero los datos basicos del pedido. Si el cliente dejo adelanto, registralo aqui para que el saldo se calcule solo.
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

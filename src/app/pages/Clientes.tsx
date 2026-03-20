@@ -167,8 +167,8 @@ export default function Clientes() {
                 <p className="text-sm text-gray-600">Total clientes</p>
                 <p className="text-2xl font-bold text-gray-900 mt-1">{clientes.length}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[var(--brand-100)]">
+                <Users className="w-6 h-6 text-[var(--brand-600)]" />
               </div>
             </div>
           </CardContent>
@@ -215,7 +215,7 @@ export default function Clientes() {
                 placeholder="Buscar por nombre, teléfono o dirección..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
           </div>

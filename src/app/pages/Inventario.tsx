@@ -246,7 +246,7 @@ export default function Inventario() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total productos</p><p className="text-2xl font-bold text-gray-900 mt-1">{productos.length}</p></div><div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><Package className="w-6 h-6 text-blue-600" /></div></div></CardContent></Card>
+        <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total productos</p><p className="text-2xl font-bold text-gray-900 mt-1">{productos.length}</p></div><div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[var(--brand-100)]"><Package className="w-6 h-6 text-[var(--brand-600)]" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Stock bajo</p><p className="text-2xl font-bold text-red-600 mt-1">{productosStockBajo.length}</p></div><div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"><Package className="w-6 h-6 text-red-600" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Valor total</p><p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(valorTotal)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><Package className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Categorias</p><p className="text-2xl font-bold text-gray-900 mt-1">{totalCategorias}</p></div><div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><Package className="w-6 h-6 text-purple-600" /></div></div></CardContent></Card>
@@ -261,7 +261,7 @@ export default function Inventario() {
               placeholder="Buscar por producto, categoria o proveedor..."
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
             />
           </div>
         </CardContent>
