@@ -82,11 +82,11 @@ export default function Login() {
             <img
               src={logoUrl}
               alt={nombreComercial}
-              className="mx-auto mb-5 h-24 w-24 rounded-3xl border border-white/10 bg-white object-cover shadow-xl sm:h-28 sm:w-28 lg:h-32 lg:w-32"
+              className="mx-auto mb-5 h-28 w-28 rounded-3xl border border-white/10 bg-white object-cover shadow-xl sm:h-32 sm:w-32 lg:h-36 lg:w-36"
             />
           ) : (
-            <div className="mb-5 inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-[var(--brand-600)] text-[var(--brand-contrast)] shadow-xl sm:h-28 sm:w-28 lg:h-32 lg:w-32">
-              <Package className="h-14 w-14 text-white sm:h-16 sm:w-16 lg:h-[4.5rem] lg:w-[4.5rem]" />
+            <div className="mb-5 inline-flex h-28 w-28 items-center justify-center rounded-3xl bg-[var(--brand-600)] text-[var(--brand-contrast)] shadow-xl sm:h-32 sm:w-32 lg:h-36 lg:w-36">
+              <Package className="h-16 w-16 text-white sm:h-[4.5rem] sm:w-[4.5rem] lg:h-20 lg:w-20" />
             </div>
           )}
           <h1 className="mb-2 text-3xl font-bold text-white">Sistema de Gestión</h1>
