@@ -898,15 +898,38 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     await ensureDefaultAdmin();
 
-    const { email, password } = req.body ?? {};
+    const { identifier, email, password } = req.body ?? {};
+    const rawIdentifier = String(identifier || email || '').trim();
 
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email y contraseÃ±a son obligatorios.' });
+    if (!rawIdentifier || !password) {
+      return res.status(400).json({ message: 'Usuario o correo y contraseña son obligatorios.' });
     }
 
-    const usuario = await prisma.usuario.findUnique({
+    const normalizedIdentifier = rawIdentifier.toLowerCase();
+
+    const usuario = await prisma.usuario.findFirst({
       where: {
-        email: String(email).trim().toLowerCase(),
+        OR: [
+          {
+            email: normalizedIdentifier,
+          },
+          {
+            nombre: {
+              equals: rawIdentifier,
+              mode: 'insensitive',
+            },
+          },
+          ...(normalizedIdentifier.includes('@')
+            ? []
+            : [
+                {
+                  email: {
+                    startsWith: `${normalizedIdentifier}@`,
+                    mode: 'insensitive',
+                  },
+                },
+              ]),
+        ],
       },
     });
 

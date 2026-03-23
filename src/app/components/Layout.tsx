@@ -11,7 +11,6 @@ import {
   Settings,
   LogOut,
   Calendar,
-  Bell,
   Search,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -37,7 +36,6 @@ const menuItems = [
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [notifications] = useState(3);
   const [user, setUser] = useState<AuthUser | null>(() => getAuthSession()?.user || null);
   const [negocio, setNegocio] = useState<{ nombreComercial: string; logoUrl?: string | null }>({
     nombreComercial: 'Vidriería',
@@ -175,13 +173,8 @@ export default function Layout() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3 sm:gap-4 lg:justify-end">
-              <button className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900">
-                <Bell className="w-5 h-5" />
-                {notifications > 0 ? <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" /> : null}
-              </button>
-
-              <div className="flex min-w-0 items-center gap-3 border-l border-gray-200 pl-3 sm:pl-4">
+            <div className="flex items-center justify-end gap-3 sm:gap-4 lg:justify-end">
+              <div className="hidden min-w-0 items-center gap-3 border-l border-gray-200 pl-3 sm:flex sm:pl-4">
                 <div className="min-w-0 text-right">
                   <p className="text-sm font-medium text-gray-900">{user?.nombre || 'Usuario'}</p>
                   <p className="truncate text-xs text-gray-500">{user?.email || '-'}</p>
@@ -190,10 +183,16 @@ export default function Layout() {
                   {(user?.nombre || 'U').charAt(0).toUpperCase()}
                 </div>
               </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-600)] font-medium text-[var(--brand-contrast)] sm:hidden">
+                {(user?.nombre || 'U').charAt(0).toUpperCase()}
+              </div>
             </div>
           </div>
 
-          <nav className="-mx-3 mt-3 overflow-x-auto px-3 lg:hidden">
+          <nav
+            className="-mx-3 mt-4 overflow-x-auto border-t-2 px-3 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] lg:hidden"
+            style={{ borderTopColor: 'color-mix(in srgb, var(--brand-600) 24%, #d1d5db)' }}
+          >
             <div className="flex min-w-max gap-2 pb-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;

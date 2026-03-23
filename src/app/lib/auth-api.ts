@@ -1,7 +1,7 @@
 import { getAuthSession, type AuthSession, type AuthUser } from './auth';
 
 interface LoginPayload {
-  email: string;
+  identifier: string;
   password: string;
 }
 

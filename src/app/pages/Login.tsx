@@ -15,7 +15,7 @@ type PublicLoginConfig = {
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const session = await login({ email, password });
+      const session = await login({ identifier, password });
       setAuthSession(session);
       toast.success('Bienvenido al sistema');
       navigate('/dashboard');
@@ -101,18 +101,19 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-4" autoComplete="off">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">Usuario o email</label>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">Usuario o correo</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                 <input
-                  type="email"
-                  name="login_email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="Ingrese su email"
+                  type="text"
+                  name="login_identifier"
+                  value={identifier}
+                  onChange={(event) => setIdentifier(event.target.value)}
+                  placeholder="Ingrese su usuario o correo"
                   autoComplete="off"
                   autoCapitalize="none"
                   spellCheck={false}
+                  required
                   className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)]"
                 />
               </div>
@@ -129,6 +130,7 @@ export default function Login() {
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Ingrese su contraseña"
                   autoComplete="new-password"
+                  required
                   className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-12 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)]"
                 />
                 <button
