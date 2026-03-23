@@ -6,6 +6,7 @@
   "scripts": {
     "api:dev": "node --watch server/index.js",
     "api:start": "node server/index.js",
+    "data:clear": "node prisma/clear-business-data.js",
     "dev:full": "concurrently -k \"npm:api:dev\" \"npm:dev\"",
     "demo:seed": "node prisma/seed-demo.js",
     "demo:seed:reset": "node prisma/seed-demo.js --reset",
