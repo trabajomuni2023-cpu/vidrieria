@@ -245,14 +245,14 @@ export default function Reportes() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <section
         className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm"
         style={{
           backgroundImage: 'linear-gradient(90deg, #ffffff 0%, var(--brand-50) 65%, color-mix(in srgb, var(--brand-100) 65%, white) 100%)',
         }}
       >
-        <div className="grid gap-6 px-6 py-6 lg:grid-cols-[1.2fr_0.8fr] lg:px-8">
+        <div className="grid gap-6 px-4 py-5 sm:px-6 sm:py-6 lg:grid-cols-[1.2fr_0.8fr] lg:px-8">
           <div className="space-y-4">
             <div
               className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium uppercase tracking-[0.18em]"
@@ -266,7 +266,7 @@ export default function Reportes() {
               Centro de analisis
             </div>
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Reportes del negocio</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Reportes del negocio</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 Consulta ingresos, gastos y productividad por rango de fechas para presentar resultados o tomar decisiones operativas.
               </p>
@@ -287,7 +287,7 @@ export default function Reportes() {
             <CardTitle>Filtros y exportacion</CardTitle>
             <CardDescription>Ajusta el rango y genera una salida lista para revisar o compartir.</CardDescription>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Select
               value={periodo}
               onChange={(event) => setPeriodo(event.target.value)}
@@ -301,19 +301,19 @@ export default function Reportes() {
             />
             {periodo === 'personalizado' ? (
               <>
-                <Input type="date" value={desde} onChange={(event) => setDesde(event.target.value)} />
-                <Input type="date" value={hasta} onChange={(event) => setHasta(event.target.value)} />
+                <Input type="date" value={desde} onChange={(event) => setDesde(event.target.value)} className="w-full sm:w-auto" />
+                <Input type="date" value={hasta} onChange={(event) => setHasta(event.target.value)} className="w-full sm:w-auto" />
               </>
             ) : null}
-            <Button variant="outline" onClick={handleClearFilters}>
+            <Button variant="outline" onClick={handleClearFilters} className="w-full sm:w-auto">
               <RotateCcw className="w-4 h-4" />
               Limpiar
             </Button>
-            <Button variant="outline" onClick={handleExportExcel}>
+            <Button variant="outline" onClick={handleExportExcel} className="w-full sm:w-auto">
               <Download className="w-4 h-4" />
               Excel
             </Button>
-            <Button variant="outline" onClick={handleExportPdf}>
+            <Button variant="outline" onClick={handleExportPdf} className="w-full sm:w-auto">
               <FileText className="w-4 h-4" />
               PDF
             </Button>
@@ -409,7 +409,7 @@ export default function Reportes() {
             <CardDescription>Comparativo visual de ingresos y gastos dentro del rango seleccionado.</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <ResponsiveContainer width="100%" height={340}>
+            <ResponsiveContainer width="100%" height={260}>
               <LineChart data={data.ingresosVsGastos}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} />
@@ -471,7 +471,22 @@ export default function Reportes() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="space-y-3 md:hidden">
+              {data.trabajosRentables.map((trabajo) => (
+                <div key={trabajo.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm font-medium text-slate-900">{trabajo.numero}</p>
+                  <p className="mt-1 text-sm text-slate-600">{trabajo.cliente}</p>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="font-medium text-emerald-600">{formatCurrency(trabajo.utilidadEstimada)}</span>
+                    <span className="text-slate-700">{trabajo.margenPorcentaje.toFixed(1)}%</span>
+                  </div>
+                </div>
+              ))}
+              {!isLoading && data.trabajosRentables.length === 0 ? (
+                <div className="px-4 py-10 text-center text-sm text-slate-500">No hay trabajos con materiales registrados en este periodo.</div>
+              ) : null}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="border-b border-slate-200 bg-slate-50">
                   <tr>
@@ -517,7 +532,21 @@ export default function Reportes() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="space-y-3 md:hidden">
+              {data.clientesConMasCompras.map((cliente) => (
+                <div key={cliente.cliente} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm font-medium text-slate-900">{cliente.cliente}</p>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="font-medium text-sky-700">{formatCurrency(cliente.totalCompras)}</span>
+                    <span className="text-slate-700">{cliente.trabajos} trabajos</span>
+                  </div>
+                </div>
+              ))}
+              {!isLoading && data.clientesConMasCompras.length === 0 ? (
+                <div className="px-4 py-10 text-center text-sm text-slate-500">No hay compras registradas en este periodo.</div>
+              ) : null}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="border-b border-slate-200 bg-slate-50">
                   <tr>
@@ -555,7 +584,7 @@ export default function Reportes() {
             <CardDescription>Distribucion actual del flujo operativo.</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
                   data={trabajosPorEstado}
@@ -583,7 +612,7 @@ export default function Reportes() {
             <CardDescription>Materiales con mayor salida dentro del periodo.</CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={260}>
               <BarChart data={data.productosUsados} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
                 <XAxis type="number" tickLine={false} axisLine={false} />
@@ -603,7 +632,18 @@ export default function Reportes() {
             <CardDescription>Ayuda a priorizar seguimiento de cobros.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="space-y-3 md:hidden">
+              {data.clientesConSaldo.map((cliente) => (
+                <div key={cliente.cliente} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm font-medium text-slate-900">{cliente.cliente}</p>
+                  <p className="mt-2 text-sm font-semibold text-rose-600">{formatCurrency(cliente.saldo)}</p>
+                </div>
+              ))}
+              {!isLoading && data.clientesConSaldo.length === 0 ? (
+                <div className="px-4 py-10 text-center text-sm text-slate-500">No hay saldos pendientes en este periodo.</div>
+              ) : null}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="border-b border-slate-200 bg-slate-50">
                   <tr>

@@ -198,25 +198,25 @@ export default function Trabajos() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Trabajos</h1>
           <p className="text-sm text-gray-600 mt-1">Gestiona pedidos y trabajos en proceso</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredTrabajos.length === 0}>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredTrabajos.length === 0} className="w-full sm:w-auto">
             <Download className="w-4 h-4" />
             Exportar Excel
           </Button>
-          <Button onClick={() => handleOpenModal()} disabled={clientes.length === 0 && !isLoading}>
+          <Button onClick={() => handleOpenModal()} disabled={clientes.length === 0 && !isLoading} className="w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             Nuevo Trabajo
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">Total</p><p className="text-2xl font-bold text-gray-900">{stats.total}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">Pendientes</p><p className="text-2xl font-bold text-amber-600">{stats.pendientes}</p></CardContent></Card>
         <Card><CardContent className="p-4"><p className="text-xs text-gray-600 mb-1">En proceso</p><p className="text-2xl font-bold text-[var(--brand-600)]">{stats.enProceso}</p></CardContent></Card>
@@ -226,8 +226,8 @@ export default function Trabajos() {
       </div>
 
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             <div className="flex-1 relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -238,15 +238,17 @@ export default function Trabajos() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
-            <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full lg:w-auto" />
-            <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full lg:w-auto" />
-            <Button type="button" variant="outline" onClick={handleClearFilters}>
-              <RotateCcw className="w-4 h-4" />
-              Limpiar
-            </Button>
-            <div className="flex gap-2 flex-wrap">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full" />
+              <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full" />
+              <Button type="button" variant="outline" onClick={handleClearFilters} className="w-full xl:w-auto">
+                <RotateCcw className="w-4 h-4" />
+                Limpiar
+              </Button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {[['todos', 'Todos'], ['PENDIENTE', 'Pendientes'], ['EN_PROCESO', 'En proceso'], ['TERMINADO', 'Terminados'], ['ENTREGADO', 'Entregados']].map(([value, label]) => (
-                <button key={value} onClick={() => setFiltroEstado(value)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${filtroEstado === value ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                <button key={value} onClick={() => setFiltroEstado(value)} className={`shrink-0 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${filtroEstado === value ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
                   {label}
                 </button>
               ))}
@@ -257,7 +259,7 @@ export default function Trabajos() {
 
       <Card>
         <CardContent className="p-4">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-5">
             <div><p className="text-xs text-gray-500">Trabajos en rango</p><p className="text-lg font-semibold text-gray-900">{stats.total}</p></div>
             <div><p className="text-xs text-gray-500">Monto total</p><p className="text-lg font-semibold text-[var(--brand-600)]">{formatCurrency(stats.totalMonto)}</p></div>
             <div><p className="text-xs text-gray-500">Pendientes</p><p className="text-lg font-semibold text-amber-600">{stats.pendientes}</p></div>
@@ -274,7 +276,58 @@ export default function Trabajos() {
           ) : filteredTrabajos.length === 0 ? (
             <EmptyState icon={Briefcase} title={searchTerm ? 'No se encontraron trabajos' : 'Todavia no hay trabajos registrados'} description={searchTerm ? 'No hay trabajos que coincidan con tu busqueda' : 'Cuando registres trabajos reales aqui apareceran automaticamente'} />
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="divide-y divide-gray-200 md:hidden">
+              {filteredTrabajos.map((trabajo) => (
+                <div key={trabajo.id} className="space-y-4 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{trabajo.cliente}</p>
+                      <p className="mt-1 text-xs text-gray-500">{formatDate(trabajo.fecha)}</p>
+                    </div>
+                    {getEstadoBadge(trabajo.estado)}
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-700">{trabajo.descripcion}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 rounded-2xl bg-gray-50 p-3 text-sm">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Total</p>
+                      <p className="mt-1 font-semibold text-gray-900">{formatCurrency(trabajo.total)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Saldo</p>
+                      <p className="mt-1 font-semibold text-red-600">{trabajo.saldo > 0 ? formatCurrency(trabajo.saldo) : '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Adelanto</p>
+                      <p className="mt-1 text-green-600">{formatCurrency(trabajo.adelanto)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Entrega</p>
+                      <p className="mt-1 text-gray-900">{trabajo.fechaEntrega ? formatDate(trabajo.fechaEntrega) : '-'}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link to={`/dashboard/trabajos/${trabajo.id}`} className="min-w-0">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="w-4 h-4" />
+                        Ver detalle
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => handleOpenModal(trabajo)}>
+                      <Edit2 className="w-4 h-4" />
+                      Editar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -317,6 +370,7 @@ export default function Trabajos() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -350,7 +404,7 @@ export default function Trabajos() {
             <Input label="Direccion de instalacion" helperText="Si el trabajo se instala en obra, deja la direccion aqui." value={form.direccionInstalacion} onChange={(event) => updateForm('direccionInstalacion', event.target.value)} placeholder="Opcional" />
             <Textarea label="Observaciones" helperText="Anota color, medidas pendientes, coordinaciones o notas internas." value={form.observaciones} onChange={(event) => updateForm('observaciones', event.target.value)} rows={3} placeholder="Notas internas o detalles del pedido" />
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-col gap-3 pt-4 sm:flex-row">
               <Button type="button" variant="outline" onClick={handleCloseModal} className="flex-1">Cancelar</Button>
               <Button type="submit" className="flex-1" disabled={isSaving}>{isSaving ? 'Guardando...' : editingTrabajo ? 'Actualizar trabajo' : 'Registrar trabajo'}</Button>
             </div>

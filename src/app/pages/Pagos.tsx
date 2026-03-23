@@ -130,33 +130,33 @@ export default function Pagos() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
           <p className="text-sm text-gray-600 mt-1">Registro de pagos recibidos</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredPagos.length === 0}>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredPagos.length === 0} className="w-full sm:w-auto">
             <Download className="w-4 h-4" />
             Exportar Excel
           </Button>
-          <Button onClick={() => setIsModalOpen(true)}>
+          <Button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             Registrar Pago
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total cobrado</p><p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(totalRango)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><TrendingUp className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Adelantos</p><p className="mt-1 text-2xl font-bold text-[var(--brand-600)]">{formatCurrency(adelantos)}</p></div><div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--brand-100)]"><CreditCard className="w-6 h-6 text-[var(--brand-600)]" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Pagos finales</p><p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(finales)}</p></div><div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center"><CreditCard className="w-6 h-6 text-emerald-600" /></div></div></CardContent></Card>
       </div>
 
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             <div className="flex-1 relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -167,14 +167,16 @@ export default function Pagos() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
-            <Select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} options={[['todos','Todos'],['ADELANTO','Adelanto'],['PARCIAL','Parcial'],['FINAL','Final']].map(([value,label]) => ({ value, label }))} />
-            <Input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} className="w-full sm:w-auto" />
-            <Input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} className="w-full sm:w-auto" />
-            <Button type="button" variant="outline" onClick={handleClearFilters}>
-              <RotateCcw className="w-4 h-4" />
-              Limpiar
-            </Button>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <Select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} options={[['todos','Todos'],['ADELANTO','Adelanto'],['PARCIAL','Parcial'],['FINAL','Final']].map(([value,label]) => ({ value, label }))} />
+              <Input type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} className="w-full" />
+              <Input type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} className="w-full" />
+              <Button type="button" variant="outline" onClick={handleClearFilters} className="w-full xl:w-auto">
+                <RotateCcw className="w-4 h-4" />
+                Limpiar
+              </Button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {[
                 ['todos', 'Todos'],
                 ['EFECTIVO', 'Efectivo'],
@@ -184,7 +186,7 @@ export default function Pagos() {
                 <button
                   key={value}
                   onClick={() => setFiltroMetodo(value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                     filtroMetodo === value
                       ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]'
                       : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -203,7 +205,31 @@ export default function Pagos() {
           {isLoading ? (
             <div className="px-6 py-12 text-center text-sm text-gray-500">Cargando pagos...</div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="divide-y divide-gray-200 md:hidden">
+              {filteredPagos.map((pago) => (
+                <div key={pago.id} className="space-y-4 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{pago.cliente}</p>
+                      <p className="mt-1 text-xs text-gray-500">{formatDate(pago.fecha)}</p>
+                    </div>
+                    <p className="text-sm font-bold text-green-600">{formatCurrency(pago.monto)}</p>
+                  </div>
+                  <div className="rounded-2xl bg-gray-50 p-3 text-sm">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Trabajo asociado</p>
+                      <p className="mt-1 text-gray-900">{pago.trabajo}</p>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Badge variant={pago.metodo === 'EFECTIVO' ? 'success' : 'info'}>{formatEnumLabel(pago.metodo)}</Badge>
+                      <Badge variant="default">{formatEnumLabel(pago.tipo)}</Badge>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -229,6 +255,7 @@ export default function Pagos() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>

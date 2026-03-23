@@ -147,19 +147,19 @@ export default function Clientes() {
   const saldoTotalPendiente = clientes.reduce((sum, cliente) => sum + cliente.saldoPendiente, 0);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
           <p className="text-sm text-gray-600 mt-1">Gestiona la base de datos de clientes</p>
         </div>
-        <Button onClick={() => handleOpenModal()}>
+        <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
           <Plus className="w-4 h-4" />
           Nuevo Cliente
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -206,7 +206,7 @@ export default function Clientes() {
       </div>
 
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex items-center gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -245,7 +245,67 @@ export default function Clientes() {
               }
             />
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="divide-y divide-gray-200 md:hidden">
+              {filteredClientes.map((cliente) => (
+                <div key={cliente.id} className="space-y-4 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{cliente.nombre}</p>
+                      <p className="mt-1 text-xs text-gray-500">{cliente.documento ? `Documento: ${cliente.documento}` : 'Sin documento registrado'}</p>
+                    </div>
+                    {cliente.saldoPendiente > 0 ? (
+                      <span className="text-sm font-medium text-red-600">{formatCurrency(cliente.saldoPendiente)}</span>
+                    ) : (
+                      <Badge variant="success">Al día</Badge>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 rounded-2xl bg-gray-50 p-3 text-sm text-gray-600">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Teléfono</p>
+                      <p className="mt-1 text-gray-900">{cliente.telefono || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Dirección</p>
+                      <p className="mt-1 text-gray-900">{cliente.direccion || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Observación</p>
+                      <p className="mt-1 text-gray-900">{cliente.observacion || '-'}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Trabajos</p>
+                        <p className="mt-1 text-gray-900">{cliente.cantidadTrabajos}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <Link to={`/dashboard/clientes/${cliente.id}`} className="min-w-0">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => handleOpenModal(cliente)}>
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => handleDelete(cliente.id)}
+                      disabled={deletingId === cliente.id}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -313,6 +373,7 @@ export default function Clientes() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -370,7 +431,7 @@ export default function Clientes() {
             rows={3}
           />
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={handleCloseModal} className="flex-1">
               Cancelar
             </Button>

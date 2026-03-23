@@ -154,33 +154,33 @@ export default function Gastos() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gastos</h1>
           <p className="text-sm text-gray-600 mt-1">Registro de egresos del negocio</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredGastos.length === 0}>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button variant="outline" onClick={handleExportExcel} disabled={isLoading || filteredGastos.length === 0} className="w-full sm:w-auto">
             <Download className="w-4 h-4" />
             Exportar Excel
           </Button>
-          <Button onClick={() => handleOpenModal()}>
+          <Button onClick={() => handleOpenModal()} className="w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             Nuevo Gasto
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total gastado</p><p className="text-2xl font-bold text-red-600 mt-1">{formatCurrency(totalRango)}</p></div><div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"><TrendingDown className="w-6 h-6 text-red-600" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Promedio</p><p className="text-2xl font-bold text-orange-600 mt-1">{formatCurrency(promedio)}</p></div><div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"><TrendingDown className="w-6 h-6 text-orange-600" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Categoria top</p><p className="text-lg font-bold text-gray-900 mt-1">{categoriaMasUsada}</p></div><div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center"><TrendingDown className="w-6 h-6 text-slate-600" /></div></div></CardContent></Card>
       </div>
 
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -191,29 +191,58 @@ export default function Gastos() {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)] focus:border-transparent"
               />
             </div>
-            <Select value={filtroCategoria} onChange={(event) => setFiltroCategoria(event.target.value)} options={[{ value: 'todos', label: 'Todas las categorias' }, ...Array.from(new Set(gastos.map((gasto) => gasto.categoria))).map((categoria) => ({ value: categoria, label: categoria }))]} className="w-full lg:w-56" />
-            <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full lg:w-auto" />
-            <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full lg:w-auto" />
-            <Button type="button" variant="outline" onClick={handleClearFilters}>
-              <RotateCcw className="w-4 h-4" />
-              Limpiar
-            </Button>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <Select value={filtroCategoria} onChange={(event) => setFiltroCategoria(event.target.value)} options={[{ value: 'todos', label: 'Todas las categorías' }, ...Array.from(new Set(gastos.map((gasto) => gasto.categoria))).map((categoria) => ({ value: categoria, label: categoria }))]} className="w-full" />
+              <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full" />
+              <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full" />
+              <Button type="button" variant="outline" onClick={handleClearFilters} className="w-full xl:w-auto">
+                <RotateCcw className="w-4 h-4" />
+                Limpiar
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="divide-y divide-gray-200 md:hidden">
+            {filteredGastos.map((gasto) => (
+              <div key={gasto.id} className="space-y-4 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">{gasto.descripcion}</p>
+                    <p className="mt-1 text-xs text-gray-500">{formatDate(gasto.fecha)}</p>
+                  </div>
+                  <p className="text-sm font-bold text-red-600">-{formatCurrency(gasto.monto)}</p>
+                </div>
+                <div className="rounded-2xl bg-gray-50 p-3 text-sm">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="default">{gasto.categoria}</Badge>
+                  </div>
+                  <p className="mt-3 text-gray-900">{gasto.referencia || 'Sin referencia'}</p>
+                  {gasto.observacion ? <p className="mt-2 text-gray-600">{gasto.observacion}</p> : null}
+                </div>
+                <Button variant="outline" size="sm" className="w-full" onClick={() => handleOpenModal(gasto)}>
+                  <Edit2 className="w-4 h-4" />
+                  Editar gasto
+                </Button>
+              </div>
+            ))}
+            {!isLoading && filteredGastos.length === 0 ? (
+              <div className="px-6 py-10 text-center text-sm text-gray-500">No hay gastos registrados todavía.</div>
+            ) : null}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripcion</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoría</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Monto</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referencia</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Observacion</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Observación</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
                 </tr>
               </thead>
@@ -235,7 +264,7 @@ export default function Gastos() {
                 ))}
                 {!isLoading && filteredGastos.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">No hay gastos registrados todavia.</td>
+                    <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">No hay gastos registrados todavía.</td>
                   </tr>
                 ) : null}
               </tbody>
@@ -256,7 +285,7 @@ export default function Gastos() {
           <Input label="Referencia (opcional)" helperText="Puedes guardar numero de recibo, factura o una nota corta." placeholder="Ej: Factura, recibo" value={form.referencia} onChange={(event) => updateForm('referencia', event.target.value)} />
           <Textarea label="Observacion (opcional)" helperText="Usa este espacio para detalles extra que luego ayuden a recordar el gasto." rows={3} value={form.observacion} onChange={(event) => updateForm('observacion', event.target.value)} />
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={handleCloseModal} className="flex-1">Cancelar</Button>
             <Button type="submit" className="flex-1" disabled={isSaving}>{isSaving ? 'Guardando...' : editingGasto ? 'Actualizar' : 'Registrar'}</Button>
           </div>

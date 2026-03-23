@@ -109,21 +109,21 @@ export default function Caja() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Caja</h1>
         <p className="mt-1 text-sm text-gray-600">Control de ingresos y salidas</p>
       </div>
 
       <Card className="border-none" style={{ backgroundImage: 'linear-gradient(135deg, var(--brand-600), var(--brand-700))' }}>
-        <CardContent className="p-8">
+        <CardContent className="p-5 sm:p-8">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
               <Wallet className="h-8 w-8 text-white" />
             </div>
             <div className="flex-1">
               <p className="mb-1 text-sm text-white/80">Saldo en caja</p>
-              <p className="text-4xl font-bold text-white">{formatCurrency(saldoCaja)}</p>
+              <p className="text-3xl font-bold text-white sm:text-4xl">{formatCurrency(saldoCaja)}</p>
             </div>
           </div>
         </CardContent>
@@ -215,8 +215,8 @@ export default function Caja() {
       </div>
 
       <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col gap-4">
             <div className="relative w-full flex-1">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
               <input
@@ -227,31 +227,33 @@ export default function Caja() {
                 className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-600)]"
               />
             </div>
-            <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full sm:w-auto" />
-            <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full sm:w-auto" />
-            <button
-              onClick={handleClearFilters}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Limpiar
-            </button>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+              <Input type="date" value={fechaDesde} onChange={(event) => setFechaDesde(event.target.value)} className="w-full" />
+              <Input type="date" value={fechaHasta} onChange={(event) => setFechaHasta(event.target.value)} className="w-full" />
+              <button
+                onClick={handleClearFilters}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 xl:w-auto"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Limpiar
+              </button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
               <button
                 onClick={() => setFiltroTipo('todos')}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'todos' ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
+                className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'todos' ? 'bg-[var(--brand-600)] text-[var(--brand-contrast)]' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
               >
                 Todos
               </button>
               <button
                 onClick={() => setFiltroTipo('ingreso')}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'ingreso' ? 'bg-green-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
+                className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'ingreso' ? 'bg-green-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
               >
                 Ingresos
               </button>
               <button
                 onClick={() => setFiltroTipo('salida')}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'salida' ? 'bg-red-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
+                className={`shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${filtroTipo === 'salida' ? 'bg-red-600 text-white' : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
               >
                 Salidas
               </button>
@@ -265,7 +267,34 @@ export default function Caja() {
           <CardTitle>Movimientos recientes</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="divide-y divide-gray-200 md:hidden">
+            {filteredMovimientos.map((movimiento) => (
+              <div key={movimiento.id} className="space-y-4 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{movimiento.descripcion}</p>
+                    <p className="mt-1 text-xs text-gray-500">{formatDate(movimiento.fecha)}</p>
+                  </div>
+                  <Badge variant={movimiento.tipo === 'INGRESO' ? 'success' : 'danger'}>
+                    {movimiento.tipo === 'INGRESO' ? 'Ingreso' : 'Salida'}
+                  </Badge>
+                </div>
+                <div className="rounded-2xl bg-gray-50 p-3 text-sm">
+                  <p className={`font-bold ${movimiento.tipo === 'INGRESO' ? 'text-green-600' : 'text-red-600'}`}>
+                    {movimiento.tipo === 'INGRESO' ? '+' : '-'}
+                    {formatCurrency(movimiento.monto)}
+                  </p>
+                  <p className="mt-2 text-gray-600">{movimiento.referencia || 'Sin referencia'}</p>
+                </div>
+              </div>
+            ))}
+            {!isLoading && filteredMovimientos.length === 0 ? (
+              <div className="px-6 py-10 text-center text-sm text-gray-500">
+                No hay movimientos en caja todavía.
+              </div>
+            ) : null}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full">
               <thead className="border-b border-gray-200 bg-gray-50">
                 <tr>

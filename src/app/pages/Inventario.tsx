@@ -223,29 +223,29 @@ export default function Inventario() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="space-y-6 p-4 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Inventario</h1>
           <p className="text-sm text-gray-600 mt-1">Control de productos y materiales</p>
         </div>
-        <div className="flex gap-2 flex-wrap justify-end">
-          <Button variant="outline" onClick={() => setIsModalEntradaOpen(true)}>
+        <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
+          <Button variant="outline" onClick={() => setIsModalEntradaOpen(true)} className="w-full sm:w-auto">
             <ArrowDownCircle className="w-4 h-4" />
             Entrada
           </Button>
-          <Button variant="outline" onClick={() => setIsModalSalidaOpen(true)}>
+          <Button variant="outline" onClick={() => setIsModalSalidaOpen(true)} className="w-full sm:w-auto">
             <ArrowUpCircle className="w-4 h-4" />
             Salida
           </Button>
-          <Button onClick={() => handleOpenProductoModal()}>
+          <Button onClick={() => handleOpenProductoModal()} className="w-full sm:w-auto">
             <Plus className="w-4 h-4" />
             Nuevo Producto
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total productos</p><p className="text-2xl font-bold text-gray-900 mt-1">{productos.length}</p></div><div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[var(--brand-100)]"><Package className="w-6 h-6 text-[var(--brand-600)]" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Stock bajo</p><p className="text-2xl font-bold text-red-600 mt-1">{productosStockBajo.length}</p></div><div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"><Package className="w-6 h-6 text-red-600" /></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Valor total</p><p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(valorTotal)}</p></div><div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><Package className="w-6 h-6 text-green-600" /></div></div></CardContent></Card>
@@ -253,7 +253,7 @@ export default function Inventario() {
       </div>
 
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -276,7 +276,51 @@ export default function Inventario() {
               {searchTerm ? 'No se encontraron productos con ese criterio.' : 'Todavia no hay productos registrados en inventario.'}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="divide-y divide-gray-200 md:hidden">
+              {filteredProductos.map((producto) => (
+                <div key={producto.id} className="space-y-4 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{producto.nombre}</p>
+                      <p className="mt-1 text-xs text-gray-500">{producto.categoria}</p>
+                    </div>
+                    {producto.stock < producto.stockMinimo ? <Badge variant="danger">Stock bajo</Badge> : <Badge variant="success">OK</Badge>}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 rounded-2xl bg-gray-50 p-3 text-sm">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Stock</p>
+                      <p className="mt-1 font-semibold text-gray-900">{producto.stock} {producto.unidad}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Mínimo</p>
+                      <p className="mt-1 text-gray-900">{producto.stockMinimo}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Costo</p>
+                      <p className="mt-1 text-gray-900">{formatCurrency(producto.costo)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-gray-500">Proveedor</p>
+                      <p className="mt-1 text-gray-900">{producto.proveedor || '-'}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link to={`/dashboard/inventario/${producto.id}`} className="min-w-0">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <Eye className="w-4 h-4" />
+                        Ver
+                      </Button>
+                    </Link>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => handleOpenProductoModal(producto)}>
+                      <Edit2 className="w-4 h-4" />
+                      Editar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -321,6 +365,7 @@ export default function Inventario() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -333,7 +378,7 @@ export default function Inventario() {
           <Input label="Nombre del producto" helperText="Usa el nombre con el que lo reconocen en el taller o almacen." value={productoForm.nombre} onChange={(event) => setProductoForm({ ...productoForm, nombre: event.target.value })} placeholder="Ej: Vidrio templado 6mm" required />
           <Select label="Categoria" helperText="Agrupa productos similares para buscarlos mas facil." value={productoForm.categoria} onChange={(event) => setProductoForm({ ...productoForm, categoria: event.target.value })} options={[{ value: '', label: 'Seleccionar categoria' }, { value: 'Vidrios', label: 'Vidrios' }, { value: 'Espejos', label: 'Espejos' }, { value: 'Perfiles', label: 'Perfiles' }, { value: 'Accesorios', label: 'Accesorios' }]} required />
           <Select label="Unidad" helperText="Define si el producto se controla por m2, metros o unidades." value={productoForm.unidad} onChange={(event) => setProductoForm({ ...productoForm, unidad: event.target.value })} options={[{ value: 'm2', label: 'm2' }, { value: 'm', label: 'm' }, { value: 'unid', label: 'Unidad' }]} required />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input label="Stock inicial" helperText="Solo se usa al crear el producto por primera vez." type="number" value={productoForm.stockInicial} onChange={(event) => setProductoForm({ ...productoForm, stockInicial: event.target.value })} placeholder="0" required={!editingProducto} disabled={Boolean(editingProducto)} />
             <Input label="Stock minimo" helperText="Cuando baje de este numero, el sistema lo marcara como stock bajo." type="number" value={productoForm.stockMinimo} onChange={(event) => setProductoForm({ ...productoForm, stockMinimo: event.target.value })} placeholder="0" required />
           </div>
@@ -341,7 +386,7 @@ export default function Inventario() {
           <Input label="Proveedor" helperText="Opcional, pero util para recordar donde se compra normalmente." value={productoForm.proveedor} onChange={(event) => setProductoForm({ ...productoForm, proveedor: event.target.value })} placeholder="Nombre del proveedor" />
           <Textarea label="Observacion" helperText="Puedes anotar color, grosor, marca o cualquier detalle util." value={productoForm.observacion} onChange={(event) => setProductoForm({ ...productoForm, observacion: event.target.value })} rows={3} />
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={handleCloseProductoModal} className="flex-1">Cancelar</Button>
             <Button type="submit" className="flex-1" disabled={isSavingProducto}>{isSavingProducto ? 'Guardando...' : editingProducto ? 'Actualizar' : 'Crear'}</Button>
           </div>
@@ -361,7 +406,7 @@ export default function Inventario() {
           <Input label="Fecha" helperText="Fecha real de ingreso." type="date" value={entradaForm.fecha} onChange={(event) => setEntradaForm({ ...entradaForm, fecha: event.target.value })} required />
           <Textarea label="Observacion" helperText="Anota detalles utiles como lote, color o estado del material." value={entradaForm.observacion} onChange={(event) => setEntradaForm({ ...entradaForm, observacion: event.target.value })} rows={3} />
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={() => setIsModalEntradaOpen(false)} className="flex-1">Cancelar</Button>
             <Button type="submit" className="flex-1" disabled={isSavingMovimiento}>{isSavingMovimiento ? 'Guardando...' : 'Registrar'}</Button>
           </div>
@@ -380,7 +425,7 @@ export default function Inventario() {
           <Input label="Fecha" helperText="Fecha real en que salio el material." type="date" value={salidaForm.fecha} onChange={(event) => setSalidaForm({ ...salidaForm, fecha: event.target.value })} required />
           <Textarea label="Observacion" helperText="Usa este espacio si necesitas explicar mejor la salida." value={salidaForm.observacion} onChange={(event) => setSalidaForm({ ...salidaForm, observacion: event.target.value })} rows={3} />
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={() => setIsModalSalidaOpen(false)} className="flex-1">Cancelar</Button>
             <Button type="submit" variant="danger" className="flex-1" disabled={isSavingMovimiento}>{isSavingMovimiento ? 'Guardando...' : 'Registrar'}</Button>
           </div>

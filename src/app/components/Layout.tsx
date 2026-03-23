@@ -162,9 +162,9 @@ export default function Layout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col lg:ml-64">
-        <header className="sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-4 lg:px-6">
+        <header className="sticky top-0 z-10 border-b border-gray-200 bg-white px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-lg flex-1">
+            <div className="w-full max-w-lg flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                 <input
@@ -175,16 +175,16 @@ export default function Layout() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4 lg:justify-end">
+            <div className="flex items-center justify-between gap-3 sm:gap-4 lg:justify-end">
               <button className="relative rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900">
                 <Bell className="w-5 h-5" />
                 {notifications > 0 ? <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" /> : null}
               </button>
 
-              <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-                <div className="text-right">
+              <div className="flex min-w-0 items-center gap-3 border-l border-gray-200 pl-3 sm:pl-4">
+                <div className="min-w-0 text-right">
                   <p className="text-sm font-medium text-gray-900">{user?.nombre || 'Usuario'}</p>
-                  <p className="text-xs text-gray-500">{user?.email || '-'}</p>
+                  <p className="truncate text-xs text-gray-500">{user?.email || '-'}</p>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-600)] font-medium text-[var(--brand-contrast)]">
                   {(user?.nombre || 'U').charAt(0).toUpperCase()}
@@ -193,8 +193,8 @@ export default function Layout() {
             </div>
           </div>
 
-          <nav className="-mx-1 mt-4 overflow-x-auto lg:hidden">
-            <div className="flex min-w-max gap-2 px-1 pb-1">
+          <nav className="-mx-3 mt-3 overflow-x-auto px-3 lg:hidden">
+            <div className="flex min-w-max gap-2 pb-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = isActivePath(item.path);

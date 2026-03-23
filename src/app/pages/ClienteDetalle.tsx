@@ -94,12 +94,12 @@ export default function ClienteDetalle() {
   }
 
   if (isLoading) {
-    return <div className="p-6"><div className="rounded-xl border bg-white px-6 py-12 text-center text-sm text-gray-500">Cargando detalle del cliente...</div></div>;
+    return <div className="p-4 sm:p-6"><div className="rounded-xl border bg-white px-6 py-12 text-center text-sm text-gray-500">Cargando detalle del cliente...</div></div>;
   }
 
   if (!cliente) {
     return (
-      <div className="p-6 space-y-4">
+      <div className="space-y-4 p-4 sm:p-6">
         <Link to="/dashboard/clientes">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4" />
@@ -115,7 +115,7 @@ export default function ClienteDetalle() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <Link to="/dashboard/clientes">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="w-4 h-4" />
@@ -123,15 +123,15 @@ export default function ClienteDetalle() {
         </Button>
       </Link>
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{cliente.nombre}</h1>
           <p className="text-sm text-gray-600 mt-1">Informacion completa del cliente</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>Editar Cliente</Button>
+        <Button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">Editar Cliente</Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"><Phone className="w-5 h-5 text-blue-600" /></div><div><p className="text-xs text-gray-600 mb-1">Telefono</p><p className="text-sm font-medium text-gray-900">{cliente.telefono}</p></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0"><User className="w-5 h-5 text-purple-600" /></div><div><p className="text-xs text-gray-600 mb-1">Documento</p><p className="text-sm font-medium text-gray-900">{cliente.documento || '-'}</p></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"><FileText className="w-5 h-5 text-green-600" /></div><div><p className="text-xs text-gray-600 mb-1">Total trabajos</p><p className="text-sm font-medium text-gray-900">{cliente.cantidadTrabajos}</p></div></div></CardContent></Card>
@@ -152,7 +152,28 @@ export default function ClienteDetalle() {
           {cliente.trabajos.length === 0 ? (
             <div className="py-8 text-center text-sm text-gray-500">Este cliente todavia no tiene trabajos registrados.</div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="space-y-3 md:hidden">
+              {cliente.trabajos.map((trabajo) => (
+                <div key={trabajo.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-gray-500">{formatDate(trabajo.fecha)}</p>
+                      <p className="mt-1 text-sm text-gray-900">{trabajo.descripcion}</p>
+                    </div>
+                    {getEstadoBadge(trabajo.estado)}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-900">{formatCurrency(trabajo.total)}</span>
+                    <span className={trabajo.saldo > 0 ? 'font-medium text-red-600' : 'text-green-600'}>{trabajo.saldo > 0 ? formatCurrency(trabajo.saldo) : 'Pagado'}</span>
+                  </div>
+                  <Link to={`/dashboard/trabajos/${trabajo.id}`} className="mt-3 block">
+                    <Button variant="outline" size="sm" className="w-full">Ver detalle</Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -178,6 +199,7 @@ export default function ClienteDetalle() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -188,7 +210,21 @@ export default function ClienteDetalle() {
           {cliente.pagos.length === 0 ? (
             <div className="py-8 text-center text-sm text-gray-500">Este cliente todavia no tiene pagos registrados.</div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="space-y-3 md:hidden">
+              {cliente.pagos.map((pago) => (
+                <div key={pago.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-3">
+                  <p className="text-xs text-gray-500">{formatDate(pago.fecha)}</p>
+                  <p className="mt-1 text-sm text-gray-900">{pago.trabajo}</p>
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{formatEnumLabel(pago.tipo)}</span>
+                    <span className="font-medium text-green-600">{formatCurrency(pago.monto)}</span>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-600">{formatEnumLabel(pago.metodo)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
@@ -212,6 +248,7 @@ export default function ClienteDetalle() {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -219,11 +256,11 @@ export default function ClienteDetalle() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Editar Cliente" size="md">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input label="Nombre completo" value={form.nombre} onChange={(event) => setForm({ ...form, nombre: event.target.value })} required />
-          <Input label="Telefono" value={form.telefono} onChange={(event) => setForm({ ...form, telefono: event.target.value })} required />
-          <Input label="Direccion" value={form.direccion} onChange={(event) => setForm({ ...form, direccion: event.target.value })} required />
+          <Input label="Teléfono" value={form.telefono} onChange={(event) => setForm({ ...form, telefono: event.target.value })} />
+          <Input label="Dirección" value={form.direccion} onChange={(event) => setForm({ ...form, direccion: event.target.value })} />
           <Input label="Documento (opcional)" value={form.documento} onChange={(event) => setForm({ ...form, documento: event.target.value })} />
-          <Textarea label="Observacion (opcional)" value={form.observacion} onChange={(event) => setForm({ ...form, observacion: event.target.value })} rows={3} />
-          <div className="flex gap-3 pt-4">
+          <Textarea label="Observación (opcional)" value={form.observacion} onChange={(event) => setForm({ ...form, observacion: event.target.value })} rows={3} />
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row">
             <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">Cancelar</Button>
             <Button type="submit" className="flex-1" disabled={isSaving}>{isSaving ? 'Guardando...' : 'Actualizar'}</Button>
           </div>

@@ -154,12 +154,12 @@ export default function TrabajoDetalle() {
   };
 
   if (isLoading) {
-    return <div className="p-6"><div className="rounded-xl border bg-white px-6 py-12 text-center text-sm text-gray-500">Cargando detalle del trabajo...</div></div>;
+    return <div className="p-4 sm:p-6"><div className="rounded-xl border bg-white px-6 py-12 text-center text-sm text-gray-500">Cargando detalle del trabajo...</div></div>;
   }
 
   if (!trabajo) {
     return (
-      <div className="p-6 space-y-4">
+      <div className="space-y-4 p-4 sm:p-6">
         <Link to="/dashboard/trabajos">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4" />
@@ -175,7 +175,7 @@ export default function TrabajoDetalle() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <Link to="/dashboard/trabajos">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="w-4 h-4" />
@@ -183,7 +183,7 @@ export default function TrabajoDetalle() {
         </Button>
       </Link>
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold text-gray-900">{trabajo.numero}</h1>
@@ -191,13 +191,13 @@ export default function TrabajoDetalle() {
           </div>
           <p className="text-sm text-gray-600">{trabajo.descripcion}</p>
         </div>
-        <Button variant="outline" onClick={() => setIsModalEditOpen(true)}>
+        <Button variant="outline" onClick={() => setIsModalEditOpen(true)} className="w-full sm:w-auto">
           <Edit2 className="w-4 h-4" />
           Editar
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--brand-100)]"><User className="w-5 h-5 text-[var(--brand-600)]" /></div><div><p className="text-xs text-gray-600 mb-1">Cliente</p><p className="text-sm font-medium text-gray-900">{trabajo.cliente}</p></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"><Calendar className="w-5 h-5 text-green-600" /></div><div><p className="text-xs text-gray-600 mb-1">Fecha entrega</p><p className="text-sm font-medium text-gray-900">{trabajo.fechaEntrega ? formatDate(trabajo.fechaEntrega) : '-'}</p></div></div></CardContent></Card>
         <Card><CardContent className="p-6"><div className="flex items-start gap-3"><div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0"><FileText className="w-5 h-5 text-purple-600" /></div><div><p className="text-xs text-gray-600 mb-1">Boleta</p><p className="text-sm font-medium text-gray-900">{trabajo.boleta || '-'}</p></div></div></CardContent></Card>

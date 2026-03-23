@@ -179,20 +179,20 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <section
         className="overflow-hidden rounded-3xl border border-slate-200 text-white shadow-xl"
         style={{
           backgroundImage: 'linear-gradient(135deg, var(--hero-from), var(--hero-via), var(--hero-to))',
         }}
       >
-        <div className="grid gap-8 px-6 py-7 lg:grid-cols-[1.5fr_1fr] lg:px-8">
+        <div className="grid gap-6 px-4 py-5 sm:px-6 sm:py-7 lg:grid-cols-[1.5fr_1fr] lg:px-8">
           <div className="space-y-5">
             <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.2em] text-sky-100">
               Panel general del negocio
             </div>
             <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight text-white md:text-4xl">
+              <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl md:text-4xl">
                 Control diario para una vidrieria en una sola vista
               </h1>
               <p className="max-w-2xl text-sm leading-6 text-slate-200 md:text-base">
@@ -245,12 +245,12 @@ export default function Dashboard() {
         <p className="mt-1 text-sm text-slate-600">Una lectura rapida del estado operativo y financiero.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {kpiData.map((kpi) => {
           const Icon = kpi.icon;
           return (
             <Card key={kpi.title} className="overflow-hidden border-slate-200/80 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <CardContent className="p-6">
+              <CardContent className="p-5 sm:p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <p className="mb-1 text-sm text-slate-500">{kpi.title}</p>
@@ -274,7 +274,7 @@ export default function Dashboard() {
             <CardDescription>Comparativo de los ultimos 3 meses para ver tendencia y margen.</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={260}>
               <BarChart data={data.chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis dataKey="mes" tickLine={false} axisLine={false} />
@@ -332,7 +332,24 @@ export default function Dashboard() {
             </Link>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="space-y-3 md:hidden">
+              {data.recentTrabajos.map((trabajo) => (
+                <div key={trabajo.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{trabajo.cliente}</p>
+                      <p className="mt-1 text-sm text-slate-600">{trabajo.descripcion}</p>
+                    </div>
+                    {getEstadoBadge(trabajo.estado)}
+                  </div>
+                  <p className="mt-3 text-sm font-semibold text-slate-900">{formatCurrency(trabajo.total)}</p>
+                </div>
+              ))}
+              {!isLoading && data.recentTrabajos.length === 0 ? (
+                <div className="py-8 text-center text-sm text-slate-500">No hay trabajos recientes.</div>
+              ) : null}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200">
@@ -375,7 +392,24 @@ export default function Dashboard() {
             </Link>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="space-y-3 md:hidden">
+              {data.recentPagos.map((pago) => (
+                <div key={pago.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">{pago.cliente}</p>
+                      <p className="mt-1 text-sm text-slate-600">{pago.tipo}</p>
+                    </div>
+                    <p className="text-sm font-semibold text-green-600">{formatCurrency(pago.monto)}</p>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-600">{pago.metodo}</p>
+                </div>
+              ))}
+              {!isLoading && data.recentPagos.length === 0 ? (
+                <div className="py-8 text-center text-sm text-slate-500">No hay pagos recientes.</div>
+              ) : null}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200">
@@ -414,7 +448,24 @@ export default function Dashboard() {
           <CardDescription>Materiales que conviene reponer para no frenar trabajos pendientes.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="space-y-3 md:hidden">
+            {data.stockBajo.map((item) => (
+              <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-sm font-medium text-slate-900">{item.producto}</p>
+                <div className="mt-3 flex items-center justify-between text-sm text-slate-600">
+                  <span>Stock: {item.stock}</span>
+                  <span>Mínimo: {item.minimo}</span>
+                </div>
+                <div className="mt-3">
+                  <Badge variant="danger">Stock bajo</Badge>
+                </div>
+              </div>
+            ))}
+            {!isLoading && data.stockBajo.length === 0 ? (
+              <div className="py-8 text-center text-sm text-slate-500">No hay productos con stock bajo.</div>
+            ) : null}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200">
