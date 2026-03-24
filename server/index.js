@@ -289,7 +289,10 @@ async function fetchProductos() {
 }
 
 function mapTrabajo(trabajo) {
-  const totalPagado = trabajo.pagos.reduce((sum, pago) => sum + Number(pago.monto), 0);
+  const totalPagado = trabajo.pagos.reduce(
+    (sum, pago) => sum + (pago.anulado ? 0 : Number(pago.monto)),
+    0,
+  );
   const saldo = Number(trabajo.total) - totalPagado;
 
   return {
@@ -308,7 +311,10 @@ function mapTrabajo(trabajo) {
 }
 
 function mapTrabajoDetalle(trabajo) {
-  const totalPagado = trabajo.pagos.reduce((sum, pago) => sum + Number(pago.monto), 0);
+  const totalPagado = trabajo.pagos.reduce(
+    (sum, pago) => sum + (pago.anulado ? 0 : Number(pago.monto)),
+    0,
+  );
   const saldo = Number(trabajo.total) - totalPagado;
 
   return {
@@ -341,6 +347,9 @@ function mapTrabajoDetalle(trabajo) {
       monto: Number(pago.monto),
       tipo: pago.tipo,
       metodo: pago.metodo,
+      anulado: pago.anulado,
+      anuladoAt: pago.anuladoAt,
+      anuladoMotivo: pago.anuladoMotivo,
     })),
   };
 }
@@ -357,6 +366,9 @@ function mapPago(pago) {
     metodo: pago.metodo,
     tipo: pago.tipo,
     observacion: pago.observacion,
+    anulado: pago.anulado,
+    anuladoAt: pago.anuladoAt,
+    anuladoMotivo: pago.anuladoMotivo,
   };
 }
 
@@ -687,6 +699,7 @@ async function fetchTrabajos() {
       pagos: {
         select: {
           monto: true,
+          anulado: true,
         },
       },
     },
@@ -728,6 +741,7 @@ async function syncTrabajoFinancials(tx, trabajoId) {
       pagos: {
         select: {
           monto: true,
+          anulado: true,
         },
       },
     },
@@ -737,7 +751,10 @@ async function syncTrabajoFinancials(tx, trabajoId) {
     throw new Error('Trabajo no encontrado.');
   }
 
-  const totalPagado = trabajo.pagos.reduce((sum, pago) => sum + Number(pago.monto), 0);
+  const totalPagado = trabajo.pagos.reduce(
+    (sum, pago) => sum + (pago.anulado ? 0 : Number(pago.monto)),
+    0,
+  );
   const saldo = Number(trabajo.total) - totalPagado;
 
   await tx.trabajo.update({
@@ -886,6 +903,8 @@ function mapClienteDetalle(cliente) {
       monto: Number(pago.monto),
       tipo: pago.tipo,
       metodo: pago.metodo,
+      anulado: pago.anulado,
+      anuladoMotivo: pago.anuladoMotivo,
     })),
   };
 }
@@ -1323,6 +1342,8 @@ app.get('/api/clientes/:id', async (req, res) => {
             monto: true,
             tipo: true,
             metodo: true,
+            anulado: true,
+            anuladoMotivo: true,
             trabajo: {
               select: {
                 descripcion: true,
@@ -1367,6 +1388,7 @@ app.get('/api/dashboard', async (_req, res) => {
           pagos: {
             select: {
               monto: true,
+              anulado: true,
             },
           },
         },
@@ -1375,6 +1397,9 @@ app.get('/api/dashboard', async (_req, res) => {
         },
       }),
       prisma.pago.findMany({
+        where: {
+          anulado: false,
+        },
         include: {
           cliente: {
             select: {
@@ -2068,6 +2093,7 @@ app.post('/api/trabajos', async (req, res) => {
           pagos: {
             select: {
               monto: true,
+              anulado: true,
             },
           },
         },
@@ -2110,6 +2136,7 @@ app.post('/api/trabajos', async (req, res) => {
           pagos: {
             select: {
               monto: true,
+              anulado: true,
             },
           },
         },
@@ -2228,6 +2255,9 @@ app.get('/api/trabajos/:id', async (req, res) => {
             monto: true,
             tipo: true,
             metodo: true,
+            anulado: true,
+            anuladoAt: true,
+            anuladoMotivo: true,
           },
         },
       },
@@ -2741,6 +2771,85 @@ app.post('/api/pagos', async (req, res) => {
   } catch (error) {
     console.error('Error al registrar pago:', error);
     res.status(500).json({ message: 'No se pudo registrar el pago.' });
+  }
+});
+
+app.patch('/api/pagos/:id/anular', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const motivo = req.body?.motivo ? String(req.body.motivo).trim() : null;
+
+    const pago = await prisma.pago.findUnique({
+      where: { id },
+      include: {
+        cliente: {
+          select: {
+            id: true,
+            nombre: true,
+          },
+        },
+        trabajo: {
+          select: {
+            id: true,
+            descripcion: true,
+          },
+        },
+      },
+    });
+
+    if (!pago) {
+      return res.status(404).json({ message: 'Pago no encontrado.' });
+    }
+
+    if (pago.anulado) {
+      return res.status(400).json({ message: 'Este pago ya fue anulado anteriormente.' });
+    }
+
+    const pagoActualizado = await prisma.$transaction(async (tx) => {
+      const pagoAnulado = await tx.pago.update({
+        where: { id },
+        data: {
+          anulado: true,
+          anuladoAt: new Date(),
+          anuladoMotivo: motivo,
+        },
+        include: {
+          cliente: {
+            select: {
+              id: true,
+              nombre: true,
+            },
+          },
+          trabajo: {
+            select: {
+              id: true,
+              descripcion: true,
+            },
+          },
+        },
+      });
+
+      await tx.movimientoCaja.create({
+        data: {
+          trabajoId: pago.trabajoId,
+          tipo: 'SALIDA',
+          descripcion: `Anulación de pago - ${pago.trabajo?.descripcion || pago.cliente.nombre}`,
+          monto: Number(pago.monto),
+          referencia: `ANULACION_PAGO:${pago.id}`,
+        },
+      });
+
+      if (pago.trabajoId) {
+        await syncTrabajoFinancials(tx, pago.trabajoId);
+      }
+
+      return pagoAnulado;
+    });
+
+    res.json(mapPago(pagoActualizado));
+  } catch (error) {
+    console.error('Error al anular pago:', error);
+    res.status(500).json({ message: 'No se pudo anular el pago.' });
   }
 });
 

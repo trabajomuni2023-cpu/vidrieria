@@ -9,6 +9,9 @@ export interface Pago {
   metodo: string;
   tipo: string;
   observacion?: string | null;
+  anulado: boolean;
+  anuladoAt?: string | null;
+  anuladoMotivo?: string | null;
 }
 
 export interface PagoPayload {
@@ -17,6 +20,10 @@ export interface PagoPayload {
   metodo: string;
   tipo: string;
   observacion?: string;
+}
+
+export interface AnularPagoPayload {
+  motivo?: string;
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
@@ -36,6 +43,18 @@ export async function getPagos() {
 export async function createPago(payload: PagoPayload) {
   const response = await fetch('/api/pagos', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseResponse<Pago>(response);
+}
+
+export async function anularPago(id: string, payload: AnularPagoPayload = {}) {
+  const response = await fetch(`/api/pagos/${id}/anular`, {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
     },

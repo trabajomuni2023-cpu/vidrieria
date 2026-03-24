@@ -25,6 +25,9 @@ export interface TrabajoDetallePago {
   monto: number;
   tipo: string;
   metodo: string;
+  anulado: boolean;
+  anuladoAt?: string | null;
+  anuladoMotivo?: string | null;
 }
 
 export interface TrabajoDetalle extends Trabajo {

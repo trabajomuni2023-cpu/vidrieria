@@ -225,6 +225,9 @@ model Pago {
   tipo             TipoPago
   observacion      String?
   referenciaExterna String?
+  anulado         Boolean    @default(false)
+  anuladoAt       DateTime?
+  anuladoMotivo   String?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 

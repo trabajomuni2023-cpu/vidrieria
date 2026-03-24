@@ -1,0 +1,4 @@
+ALTER TABLE "Pago"
+ADD COLUMN "anulado" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN "anuladoAt" TIMESTAMP(3),
+ADD COLUMN "anuladoMotivo" TEXT;
