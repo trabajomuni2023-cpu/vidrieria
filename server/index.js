@@ -2283,6 +2283,22 @@ app.patch('/api/trabajos/:id/estado', async (req, res) => {
       return res.status(400).json({ message: 'El estado es obligatorio.' });
     }
 
+    const trabajoExistente = await prisma.trabajo.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        estado: true,
+      },
+    });
+
+    if (!trabajoExistente) {
+      return res.status(404).json({ message: 'Trabajo no encontrado.' });
+    }
+
+    if (trabajoExistente.estado === 'CANCELADO' && estado !== 'CANCELADO') {
+      return res.status(400).json({ message: 'Un trabajo cancelado ya no puede pasar a terminado o entregado.' });
+    }
+
     await prisma.trabajo.update({
       where: { id },
       data: { estado },

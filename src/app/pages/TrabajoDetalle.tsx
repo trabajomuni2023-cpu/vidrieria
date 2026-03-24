@@ -44,6 +44,7 @@ export default function TrabajoDetalle() {
   const [isModalEditOpen, setIsModalEditOpen] = useState(false);
   const [isSavingPago, setIsSavingPago] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [isConfirmCancelOpen, setIsConfirmCancelOpen] = useState(false);
   const [pagoAAnularId, setPagoAAnularId] = useState<string | null>(null);
   const [motivoAnulacion, setMotivoAnulacion] = useState('');
   const [isAnnullingPago, setIsAnnullingPago] = useState(false);
@@ -157,6 +158,8 @@ export default function TrabajoDetalle() {
       toast.error(error instanceof Error ? error.message : 'No se pudo actualizar el estado');
     }
   };
+
+  const isTrabajoCancelado = trabajo.estado === 'CANCELADO';
 
   async function handleAnularPago() {
     if (!pagoSeleccionado) {
@@ -312,9 +315,16 @@ export default function TrabajoDetalle() {
             <CardHeader><CardTitle>Acciones</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <Button className="w-full" onClick={() => setIsModalPagoOpen(true)}><CreditCard className="h-4 w-4" />Registrar pago</Button>
-              <Button variant="outline" className="w-full" onClick={() => handleCambiarEstado('TERMINADO')}>Marcar como terminado</Button>
-              <Button variant="outline" className="w-full" onClick={() => handleCambiarEstado('ENTREGADO')}>Marcar como entregado</Button>
-              <Button variant="danger" className="w-full" onClick={() => handleCambiarEstado('CANCELADO')}>Cancelar trabajo</Button>
+              <Button variant="outline" className="w-full" onClick={() => handleCambiarEstado('TERMINADO')} disabled={isTrabajoCancelado}>Marcar como terminado</Button>
+              <Button variant="outline" className="w-full" onClick={() => handleCambiarEstado('ENTREGADO')} disabled={isTrabajoCancelado}>Marcar como entregado</Button>
+              <Button variant="danger" className="w-full" onClick={() => setIsConfirmCancelOpen(true)} disabled={isTrabajoCancelado}>
+                {isTrabajoCancelado ? 'Trabajo cancelado' : 'Cancelar trabajo'}
+              </Button>
+              {isTrabajoCancelado ? (
+                <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-800">
+                  Este trabajo ya fue cancelado. Por seguridad ya no puede pasar a terminado o entregado.
+                </p>
+              ) : null}
             </CardContent>
           </Card>
         </div>
@@ -346,6 +356,42 @@ export default function TrabajoDetalle() {
           <Textarea label="Observaciones" rows={3} value={form.observaciones} onChange={(event) => setForm({ ...form, observaciones: event.target.value })} />
           <div className="flex gap-3 pt-4"><Button type="button" variant="outline" onClick={() => setIsModalEditOpen(false)} className="flex-1">Cancelar</Button><Button type="submit" className="flex-1" disabled={isSavingEdit}>{isSavingEdit ? 'Guardando...' : 'Actualizar'}</Button></div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={isConfirmCancelOpen}
+        onClose={() => setIsConfirmCancelOpen(false)}
+        title="Confirmar cancelación"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+            Vas a cancelar este trabajo. Se conservará el historial, pero ya no debería avanzar a terminado o entregado.
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+            <p className="font-semibold text-slate-900">{trabajo.numero}</p>
+            <p className="mt-1 text-slate-600">{trabajo.descripcion}</p>
+            <p className="mt-3 text-slate-900">
+              Cliente: <span className="font-medium">{trabajo.cliente}</span>
+            </p>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setIsConfirmCancelOpen(false)}>
+              Volver
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              className="flex-1"
+              onClick={async () => {
+                await handleCambiarEstado('CANCELADO');
+                setIsConfirmCancelOpen(false);
+              }}
+            >
+              Sí, cancelar trabajo
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       <Modal
