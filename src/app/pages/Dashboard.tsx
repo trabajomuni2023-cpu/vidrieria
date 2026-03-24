@@ -20,6 +20,7 @@ import { Link } from 'react-router';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { toast } from 'sonner';
 import { getDashboard, type DashboardData } from '../lib/dashboard-api';
+import { HelpCallout } from '../components/ui/HelpCallout';
 
 const emptyDashboard: DashboardData = {
   kpis: {
@@ -153,9 +154,9 @@ export default function Dashboard() {
 
   const quickActions = [
     {
-      title: 'Registrar trabajo',
-      description: 'Ingresa un nuevo trabajo y su adelanto inicial.',
-      to: '/dashboard/trabajos',
+      title: 'Registro rápido',
+      description: 'Registra cliente, trabajo y adelanto inicial en una sola pantalla.',
+      to: '/dashboard/registro',
       icon: Briefcase,
     },
     {
@@ -180,6 +181,13 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
+      <HelpCallout
+        title="Cómo leer esta pantalla"
+        description="Usa el Dashboard como vista rápida: si necesitas registrar algo nuevo entra por Registro rápido; si quieres corregir o revisar historial, entra al módulo específico."
+        tone="tip"
+        className="md:hidden"
+      />
+
       <section
         className="overflow-hidden rounded-3xl border border-slate-200 text-white shadow-xl"
         style={{
@@ -242,7 +250,7 @@ export default function Dashboard() {
 
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Indicadores clave</h2>
-        <p className="mt-1 text-sm text-slate-600">Una lectura rapida del estado operativo y financiero.</p>
+        <p className="mt-1 text-sm text-slate-600">Una lectura rápida del estado operativo y financiero.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">

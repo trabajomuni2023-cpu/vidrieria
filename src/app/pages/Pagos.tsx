@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { HelpCallout } from '../components/ui/HelpCallout';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { toast } from 'sonner';
 import { anularPago, createPago, getPagos, type Pago } from '../lib/pagos-api';
@@ -192,6 +193,12 @@ export default function Pagos() {
           </Button>
         </div>
       </div>
+
+      <HelpCallout
+        title="Cómo corregir un error"
+        description="Si registraste un pago en el trabajo equivocado, usa Anular pago. Así el historial queda claro y la caja se corrige sola."
+        tone="warning"
+      />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total cobrado</p><p className="mt-1 text-2xl font-bold text-green-600">{formatCurrency(totalRango)}</p></div><div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100"><TrendingUp className="h-6 w-6 text-green-600" /></div></div></CardContent></Card>

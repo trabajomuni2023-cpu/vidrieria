@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { HelpCallout } from '../components/ui/HelpCallout';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { createGasto, getGastos, updateGasto, type Gasto, type GastoPayload } from '../lib/gastos-api';
 import { toast } from 'sonner';
@@ -171,6 +172,12 @@ export default function Gastos() {
           </Button>
         </div>
       </div>
+
+      <HelpCallout
+        title="Qué conviene registrar aquí"
+        description="Usa este módulo para salidas reales de dinero del negocio, como materiales, transporte o servicios. Si solo es una corrección de stock, hazla desde Inventario."
+        tone="tip"
+      />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total gastado</p><p className="text-2xl font-bold text-red-600 mt-1">{formatCurrency(totalRango)}</p></div><div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"><TrendingDown className="w-6 h-6 text-red-600" /></div></div></CardContent></Card>

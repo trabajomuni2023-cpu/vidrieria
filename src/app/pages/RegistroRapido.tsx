@@ -1,12 +1,26 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { CheckCircle2, CreditCard, Plus, Search, UserRound, Briefcase, Sparkles } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  CheckCircle2,
+  CreditCard,
+  Search,
+  UserRound,
+  Briefcase,
+  Sparkles,
+} from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
+import { HelpCallout } from '../components/ui/HelpCallout';
 import { createCliente, getClientes, type Cliente } from '../lib/clientes-api';
 import { createTrabajo, type TrabajoPayload } from '../lib/trabajos-api';
 import { formatCurrency } from '../lib/utils';
@@ -54,13 +68,15 @@ export default function RegistroRapido() {
       try {
         const data = await getClientes();
 
-        if (isMounted) {
-          setClientes(data);
-          if (data.length > 0) {
-            setClienteSeleccionadoId(data[0].id);
-          } else {
-            setClienteMode('nuevo');
-          }
+        if (!isMounted) {
+          return;
+        }
+
+        setClientes(data);
+        if (data.length > 0) {
+          setClienteSeleccionadoId(data[0].id);
+        } else {
+          setClienteMode('nuevo');
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : 'No se pudo cargar la lista de clientes.');
@@ -85,10 +101,11 @@ export default function RegistroRapido() {
       return clientes;
     }
 
-    return clientes.filter((cliente) =>
-      cliente.nombre.toLowerCase().includes(search) ||
-      (cliente.telefono || '').toLowerCase().includes(search) ||
-      (cliente.documento || '').toLowerCase().includes(search),
+    return clientes.filter(
+      (cliente) =>
+        cliente.nombre.toLowerCase().includes(search) ||
+        (cliente.telefono || '').toLowerCase().includes(search) ||
+        (cliente.documento || '').toLowerCase().includes(search),
     );
   }, [clienteSearch, clientes]);
 
@@ -102,7 +119,10 @@ export default function RegistroRapido() {
   const saldoCalculado = Math.max(totalNumero - adelantoNumero, 0);
 
   const progreso = {
-    cliente: clienteMode === 'existente' ? Boolean(clienteSeleccionadoId) : Boolean(clienteForm.nombre.trim()),
+    cliente:
+      clienteMode === 'existente'
+        ? Boolean(clienteSeleccionadoId)
+        : Boolean(clienteForm.nombre.trim()),
     trabajo: Boolean(trabajoForm.descripcion.trim()) && totalNumero > 0,
     pago: !registrarAdelanto || adelantoNumero > 0,
   };
@@ -132,7 +152,7 @@ export default function RegistroRapido() {
     }
 
     if (!trabajoForm.descripcion.trim() || totalNumero <= 0) {
-      toast.error('Completa la descripción y el total del trabajo.');
+      toast.error('Completa la descripción y el total del trabajo antes de guardar.');
       return;
     }
 
@@ -165,7 +185,7 @@ export default function RegistroRapido() {
         adelantoInicial: registrarAdelanto ? trabajoForm.adelantoInicial || '0' : '0',
       });
 
-      toast.success('Registro completo guardado correctamente.');
+      toast.success('Registro completo guardado. Ya puedes revisar el detalle del trabajo.');
       resetFormulario();
       navigate(`/dashboard/trabajos/${trabajo.id}`);
     } catch (error) {
@@ -180,7 +200,8 @@ export default function RegistroRapido() {
       <section
         className="overflow-hidden rounded-3xl border border-slate-200 shadow-sm"
         style={{
-          backgroundImage: 'linear-gradient(135deg, #ffffff 0%, var(--brand-50) 55%, color-mix(in srgb, var(--brand-100) 55%, white) 100%)',
+          backgroundImage:
+            'linear-gradient(135deg, #ffffff 0%, var(--brand-50) 55%, color-mix(in srgb, var(--brand-100) 55%, white) 100%)',
         }}
       >
         <div className="grid gap-6 px-4 py-5 sm:px-6 lg:grid-cols-[1.35fr_0.9fr] lg:px-8">
@@ -197,31 +218,58 @@ export default function RegistroRapido() {
               Registro guiado
             </div>
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Registrar cliente, trabajo y pago en un solo flujo</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+                Registrar cliente, trabajo y pago en un solo flujo
+              </h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Pensado para uso rápido y sin confusión. Completa los bloques en orden y el sistema guardará todo junto.
+                Pensado para uso rápido y sin confusión. Completa los bloques en orden
+                y el sistema guardará todo junto.
               </p>
             </div>
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm backdrop-blur">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Progreso del registro</p>
-            <p className="mt-2 text-lg font-semibold text-slate-900">{pasosCompletos} de 3 bloques listos</p>
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+              Progreso del registro
+            </p>
+            <p className="mt-2 text-lg font-semibold text-slate-900">
+              {pasosCompletos} de 3 bloques listos
+            </p>
             <div className="mt-4 grid gap-3">
               {[
                 { label: 'Cliente', ok: progreso.cliente },
                 { label: 'Trabajo', ok: progreso.trabajo },
                 { label: 'Pago inicial', ok: progreso.pago },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
                   <span className="text-sm text-slate-700">{item.label}</span>
-                  {item.ok ? <Badge variant="success">Listo</Badge> : <Badge variant="warning">Pendiente</Badge>}
+                  {item.ok ? (
+                    <Badge variant="success">Listo</Badge>
+                  ) : (
+                    <Badge variant="warning">Pendiente</Badge>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         </div>
       </section>
+
+      <div className="grid gap-3 xl:grid-cols-2">
+        <HelpCallout
+          title="Consejo para usuarios nuevos"
+          description="Si el cliente ya existe, selecciónalo primero. Si es nuevo, crea sus datos básicos y luego continúa con el trabajo."
+          tone="tip"
+        />
+        <HelpCallout
+          title="Qué guardará el sistema"
+          description="Al finalizar se registrarán el cliente, el trabajo y el pago inicial si corresponde. No necesitas ir módulo por módulo."
+          tone="info"
+        />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="border-slate-200/80 shadow-sm">
@@ -231,7 +279,11 @@ export default function RegistroRapido() {
             </div>
             <div>
               <p className="text-sm text-slate-500">Cliente</p>
-              <p className="mt-1 text-base font-semibold text-slate-900">{clienteMode === 'existente' ? (clienteSeleccionado?.nombre || 'Seleccionar cliente') : (clienteForm.nombre || 'Cliente nuevo')}</p>
+              <p className="mt-1 text-base font-semibold text-slate-900">
+                {clienteMode === 'existente'
+                  ? clienteSeleccionado?.nombre || 'Seleccionar cliente'
+                  : clienteForm.nombre || 'Cliente nuevo'}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -243,7 +295,9 @@ export default function RegistroRapido() {
             </div>
             <div>
               <p className="text-sm text-slate-500">Trabajo</p>
-              <p className="mt-1 text-base font-semibold text-slate-900">{trabajoForm.descripcion || 'Pendiente de completar'}</p>
+              <p className="mt-1 text-base font-semibold text-slate-900">
+                {trabajoForm.descripcion || 'Pendiente de completar'}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -263,14 +317,25 @@ export default function RegistroRapido() {
         </Card>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_0.75fr]">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 gap-6 xl:grid-cols-[1.5fr_0.75fr]"
+      >
         <div className="space-y-6">
           <Card className="border-slate-200/80 shadow-sm">
             <CardHeader>
               <CardTitle>Paso 1. Cliente</CardTitle>
-              <CardDescription>Primero elige si vas a usar un cliente existente o si vas a crear uno nuevo.</CardDescription>
+              <CardDescription>
+                Primero elige si vas a usar un cliente existente o si vas a crear uno nuevo.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
+              <HelpCallout
+                title="Qué hacer aquí"
+                description="Este bloque solo identifica a la persona o empresa. Teléfono y dirección son opcionales, así que no te detengas si no los tienes."
+                tone="info"
+              />
+
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <button
                   type="button"
@@ -282,7 +347,9 @@ export default function RegistroRapido() {
                   }`}
                 >
                   <p className="text-sm font-semibold text-slate-900">Usar cliente existente</p>
-                  <p className="mt-1 text-sm text-slate-600">Ideal si ya atendiste a esa persona antes.</p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Ideal si ya atendiste a esa persona antes.
+                  </p>
                 </button>
                 <button
                   type="button"
@@ -294,7 +361,9 @@ export default function RegistroRapido() {
                   }`}
                 >
                   <p className="text-sm font-semibold text-slate-900">Crear cliente nuevo</p>
-                  <p className="mt-1 text-sm text-slate-600">Úsalo si es la primera vez que lo registran.</p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Úsalo si es la primera vez que lo registran.
+                  </p>
                 </button>
               </div>
 
@@ -317,7 +386,10 @@ export default function RegistroRapido() {
                     value={clienteSeleccionadoId}
                     onChange={(event) => setClienteSeleccionadoId(event.target.value)}
                     options={[
-                      { value: '', label: isLoading ? 'Cargando clientes...' : 'Seleccionar cliente' },
+                      {
+                        value: '',
+                        label: isLoading ? 'Cargando clientes...' : 'Seleccionar cliente',
+                      },
                       ...clientesFiltrados.map((cliente) => ({
                         value: cliente.id,
                         label: cliente.nombre,
@@ -328,15 +400,25 @@ export default function RegistroRapido() {
 
                   {clienteSeleccionado ? (
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-sm font-semibold text-slate-900">{clienteSeleccionado.nombre}</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {clienteSeleccionado.nombre}
+                      </p>
                       <div className="mt-3 grid grid-cols-1 gap-3 text-sm text-slate-600 sm:grid-cols-2">
                         <div>
-                          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Teléfono</p>
-                          <p className="mt-1 text-slate-900">{clienteSeleccionado.telefono || '-'}</p>
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                            Teléfono
+                          </p>
+                          <p className="mt-1 text-slate-900">
+                            {clienteSeleccionado.telefono || '-'}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Dirección</p>
-                          <p className="mt-1 text-slate-900">{clienteSeleccionado.direccion || '-'}</p>
+                          <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                            Dirección
+                          </p>
+                          <p className="mt-1 text-slate-900">
+                            {clienteSeleccionado.direccion || '-'}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -348,7 +430,9 @@ export default function RegistroRapido() {
                     label="Nombre completo"
                     helperText="Es el dato más importante para encontrar luego al cliente."
                     value={clienteForm.nombre}
-                    onChange={(event) => setClienteForm((current) => ({ ...current, nombre: event.target.value }))}
+                    onChange={(event) =>
+                      setClienteForm((current) => ({ ...current, nombre: event.target.value }))
+                    }
                     placeholder="Ej: María Torres"
                     required
                   />
@@ -356,21 +440,36 @@ export default function RegistroRapido() {
                     label="Teléfono (opcional)"
                     helperText="Útil para llamadas o WhatsApp."
                     value={clienteForm.telefono}
-                    onChange={(event) => setClienteForm((current) => ({ ...current, telefono: event.target.value }))}
+                    onChange={(event) =>
+                      setClienteForm((current) => ({
+                        ...current,
+                        telefono: event.target.value,
+                      }))
+                    }
                     placeholder="Ej: 987654321"
                   />
                   <Input
                     label="Dirección (opcional)"
                     helperText="Puedes registrar dirección del cliente o lugar frecuente."
                     value={clienteForm.direccion}
-                    onChange={(event) => setClienteForm((current) => ({ ...current, direccion: event.target.value }))}
+                    onChange={(event) =>
+                      setClienteForm((current) => ({
+                        ...current,
+                        direccion: event.target.value,
+                      }))
+                    }
                     placeholder="Ej: Av. Principal 123"
                   />
                   <Input
                     label="Documento (opcional)"
                     helperText="DNI o RUC si hace falta para comprobantes."
                     value={clienteForm.documento}
-                    onChange={(event) => setClienteForm((current) => ({ ...current, documento: event.target.value }))}
+                    onChange={(event) =>
+                      setClienteForm((current) => ({
+                        ...current,
+                        documento: event.target.value,
+                      }))
+                    }
                     placeholder="Ej: 12345678"
                   />
                   <div className="sm:col-span-2">
@@ -379,7 +478,12 @@ export default function RegistroRapido() {
                       helperText="Anota un dato útil para recordar a este cliente."
                       rows={3}
                       value={clienteForm.observacion}
-                      onChange={(event) => setClienteForm((current) => ({ ...current, observacion: event.target.value }))}
+                      onChange={(event) =>
+                        setClienteForm((current) => ({
+                          ...current,
+                          observacion: event.target.value,
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -390,15 +494,28 @@ export default function RegistroRapido() {
           <Card className="border-slate-200/80 shadow-sm">
             <CardHeader>
               <CardTitle>Paso 2. Trabajo</CardTitle>
-              <CardDescription>Ahora registra el pedido principal para que entre directo al flujo del negocio.</CardDescription>
+              <CardDescription>
+                Ahora registra el pedido principal para que entre directo al flujo del negocio.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <HelpCallout
+                title="Qué no puede faltar"
+                description="La descripción y el total son obligatorios. Todo lo demás te ayuda a ordenar mejor entregas, calendario y reportes."
+                tone="tip"
+              />
+
               <Textarea
                 label="Descripción del trabajo"
                 helperText="Explica claramente qué se va a fabricar, instalar o entregar."
                 rows={3}
                 value={trabajoForm.descripcion}
-                onChange={(event) => setTrabajoForm((current) => ({ ...current, descripcion: event.target.value }))}
+                onChange={(event) =>
+                  setTrabajoForm((current) => ({
+                    ...current,
+                    descripcion: event.target.value,
+                  }))
+                }
                 placeholder="Ej: Fabricación e instalación de mampara de vidrio templado"
                 required
               />
@@ -410,7 +527,9 @@ export default function RegistroRapido() {
                   type="number"
                   step="0.01"
                   value={trabajoForm.total}
-                  onChange={(event) => setTrabajoForm((current) => ({ ...current, total: event.target.value }))}
+                  onChange={(event) =>
+                    setTrabajoForm((current) => ({ ...current, total: event.target.value }))
+                  }
                   placeholder="0.00"
                   required
                 />
@@ -419,20 +538,35 @@ export default function RegistroRapido() {
                   helperText="Si ya la sabes, aparecerá luego en calendario."
                   type="date"
                   value={trabajoForm.fechaEntrega}
-                  onChange={(event) => setTrabajoForm((current) => ({ ...current, fechaEntrega: event.target.value }))}
+                  onChange={(event) =>
+                    setTrabajoForm((current) => ({
+                      ...current,
+                      fechaEntrega: event.target.value,
+                    }))
+                  }
                 />
                 <Input
                   label="Tipo de trabajo (opcional)"
-                  helperText="Ejemplo: Mampara, espejo, puerta, ventana."
+                  helperText="Ejemplo: Mampara, espejo, puerta o ventana."
                   value={trabajoForm.tipoTrabajo}
-                  onChange={(event) => setTrabajoForm((current) => ({ ...current, tipoTrabajo: event.target.value }))}
+                  onChange={(event) =>
+                    setTrabajoForm((current) => ({
+                      ...current,
+                      tipoTrabajo: event.target.value,
+                    }))
+                  }
                   placeholder="Ej: Mampara"
                 />
                 <Input
                   label="Boleta o comprobante (opcional)"
                   helperText="Si ya se emitió, regístralo aquí."
                   value={trabajoForm.comprobanteNumero}
-                  onChange={(event) => setTrabajoForm((current) => ({ ...current, comprobanteNumero: event.target.value }))}
+                  onChange={(event) =>
+                    setTrabajoForm((current) => ({
+                      ...current,
+                      comprobanteNumero: event.target.value,
+                    }))
+                  }
                   placeholder="Ej: B001-000123"
                 />
               </div>
@@ -441,7 +575,12 @@ export default function RegistroRapido() {
                 label="Dirección de instalación (opcional)"
                 helperText="Útil cuando el trabajo se hace fuera del taller."
                 value={trabajoForm.direccionInstalacion}
-                onChange={(event) => setTrabajoForm((current) => ({ ...current, direccionInstalacion: event.target.value }))}
+                onChange={(event) =>
+                  setTrabajoForm((current) => ({
+                    ...current,
+                    direccionInstalacion: event.target.value,
+                  }))
+                }
                 placeholder="Ej: Calle Las Flores 220"
               />
 
@@ -450,7 +589,12 @@ export default function RegistroRapido() {
                 helperText="Medidas, referencias, coordinaciones o detalles especiales."
                 rows={3}
                 value={trabajoForm.observaciones}
-                onChange={(event) => setTrabajoForm((current) => ({ ...current, observaciones: event.target.value }))}
+                onChange={(event) =>
+                  setTrabajoForm((current) => ({
+                    ...current,
+                    observaciones: event.target.value,
+                  }))
+                }
               />
             </CardContent>
           </Card>
@@ -458,9 +602,18 @@ export default function RegistroRapido() {
           <Card className="border-slate-200/80 shadow-sm">
             <CardHeader>
               <CardTitle>Paso 3. Pago inicial</CardTitle>
-              <CardDescription>Si el cliente dejó adelanto ahora mismo, puedes registrarlo aquí sin salir a otro módulo.</CardDescription>
+              <CardDescription>
+                Si el cliente dejó adelanto ahora mismo, puedes registrarlo aquí sin salir
+                a otro módulo.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <HelpCallout
+                title="Si no pagó hoy, no pasa nada"
+                description="Puedes dejar este bloque sin adelanto. El trabajo se guardará igual y luego el cobro se registra desde Pagos o desde el detalle del trabajo."
+                tone="warning"
+              />
+
               <label className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <input
                   type="checkbox"
@@ -470,7 +623,10 @@ export default function RegistroRapido() {
                 />
                 <div>
                   <p className="text-sm font-semibold text-slate-900">Registrar adelanto ahora</p>
-                  <p className="mt-1 text-sm text-slate-600">Si no hubo pago inicial, desactiva esta opción y el trabajo quedará solo con saldo pendiente.</p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Si no hubo pago inicial, desactiva esta opción y el trabajo quedará solo
+                    con saldo pendiente.
+                  </p>
                 </div>
               </label>
 
@@ -482,14 +638,24 @@ export default function RegistroRapido() {
                     type="number"
                     step="0.01"
                     value={trabajoForm.adelantoInicial}
-                    onChange={(event) => setTrabajoForm((current) => ({ ...current, adelantoInicial: event.target.value }))}
+                    onChange={(event) =>
+                      setTrabajoForm((current) => ({
+                        ...current,
+                        adelantoInicial: event.target.value,
+                      }))
+                    }
                     placeholder="0.00"
                   />
                   <Select
                     label="Método de pago"
                     helperText="Sirve para caja y reportes."
                     value={trabajoForm.metodoPago || 'EFECTIVO'}
-                    onChange={(event) => setTrabajoForm((current) => ({ ...current, metodoPago: event.target.value }))}
+                    onChange={(event) =>
+                      setTrabajoForm((current) => ({
+                        ...current,
+                        metodoPago: event.target.value,
+                      }))
+                    }
                     options={[
                       { value: 'EFECTIVO', label: 'Efectivo' },
                       { value: 'TRANSFERENCIA', label: 'Transferencia' },
@@ -508,43 +674,81 @@ export default function RegistroRapido() {
           <Card className="border-slate-200/80 shadow-sm xl:sticky xl:top-24">
             <CardHeader>
               <CardTitle>Resumen del registro</CardTitle>
-              <CardDescription>Antes de guardar, revisa que todo esté correcto.</CardDescription>
+              <CardDescription>
+                Antes de guardar, revisa que todo esté correcto.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Cliente</p>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                  Cliente
+                </p>
                 <p className="mt-2 text-sm font-semibold text-slate-900">
-                  {clienteMode === 'existente' ? clienteSeleccionado?.nombre || 'Pendiente' : clienteForm.nombre || 'Pendiente'}
+                  {clienteMode === 'existente'
+                    ? clienteSeleccionado?.nombre || 'Pendiente'
+                    : clienteForm.nombre || 'Pendiente'}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Trabajo</p>
-                <p className="mt-2 text-sm text-slate-900">{trabajoForm.descripcion || 'Pendiente de describir'}</p>
-                <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Total</span>
-                  <span className="font-semibold text-slate-900">{formatCurrency(totalNumero)}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Adelanto</span>
-                  <span className="font-semibold text-emerald-600">{formatCurrency(adelantoNumero)}</span>
-                </div>
-                <div className="mt-2 flex items-center justify-between text-sm">
-                  <span className="text-slate-600">Saldo</span>
-                  <span className="font-semibold text-rose-600">{formatCurrency(saldoCalculado)}</span>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                  Trabajo
+                </p>
+                <p className="mt-2 text-sm text-slate-900">
+                  {trabajoForm.descripcion || 'Pendiente de describir'}
+                </p>
+                <div className="mt-4 space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Total</span>
+                    <span className="font-semibold text-slate-900">
+                      {formatCurrency(totalNumero)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Adelanto</span>
+                    <span className="font-semibold text-emerald-600">
+                      {formatCurrency(adelantoNumero)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Saldo</span>
+                    <span className="font-semibold text-rose-600">
+                      {formatCurrency(saldoCalculado)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="rounded-2xl border px-4 py-3 text-sm" style={{ borderColor: 'color-mix(in srgb, var(--brand-100) 90%, white)', background: 'color-mix(in srgb, var(--brand-50) 80%, white)', color: 'var(--brand-700)' }}>
-                Al guardar, el sistema hará todo en orden: cliente, trabajo y pago inicial si corresponde.
+              <div
+                className="rounded-2xl border px-4 py-3 text-sm"
+                style={{
+                  borderColor: 'color-mix(in srgb, var(--brand-100) 90%, white)',
+                  background: 'color-mix(in srgb, var(--brand-50) 80%, white)',
+                  color: 'var(--brand-700)',
+                }}
+              >
+                Al guardar, el sistema hará todo en orden: cliente, trabajo y pago inicial
+                si corresponde.
               </div>
+
+              <HelpCallout
+                title="Antes de presionar guardar"
+                description="Revisa especialmente el cliente elegido, la descripción del trabajo y el monto del adelanto. Son los datos que más suelen generar correcciones."
+                tone="warning"
+              />
 
               <div className="space-y-3 pt-2">
                 <Button type="submit" className="w-full" disabled={isSaving}>
                   <CheckCircle2 className="h-4 w-4" />
                   {isSaving ? 'Guardando registro...' : 'Guardar registro completo'}
                 </Button>
-                <Button type="button" variant="outline" className="w-full" onClick={resetFormulario} disabled={isSaving}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={resetFormulario}
+                  disabled={isSaving}
+                >
                   Reiniciar formulario
                 </Button>
               </div>

@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { EmptyState } from '../components/ui/EmptyState';
+import { HelpCallout } from '../components/ui/HelpCallout';
 import { formatCurrency } from '../lib/utils';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
@@ -42,6 +43,7 @@ export default function Clientes() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+  const [clienteToDelete, setClienteToDelete] = useState<Cliente | null>(null);
   const [formData, setFormData] = useState<ClienteFormData>(emptyForm);
 
   useEffect(() => {
@@ -122,10 +124,6 @@ export default function Clientes() {
   };
 
   const handleDelete = (id: string) => {
-    if (!window.confirm('¿Está seguro de eliminar este cliente?')) {
-      return;
-    }
-
     const remove = async () => {
       setDeletingId(id);
 
@@ -158,6 +156,12 @@ export default function Clientes() {
           Nuevo Cliente
         </Button>
       </div>
+
+      <HelpCallout
+        title="Ayuda rápida"
+        description="Registra aquí solo los datos base del cliente. Si quieres crear todo de una vez, usa Registro rápido desde el menú."
+        tone="info"
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <Card>
@@ -295,7 +299,7 @@ export default function Clientes() {
                       variant="outline"
                       size="sm"
                       className="w-full"
-                      onClick={() => handleDelete(cliente.id)}
+                      onClick={() => setClienteToDelete(cliente)}
                       disabled={deletingId === cliente.id}
                     >
                       <Trash2 className="w-4 h-4 text-red-600" />
@@ -361,7 +365,7 @@ export default function Clientes() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDelete(cliente.id)}
+                            onClick={() => setClienteToDelete(cliente)}
                             disabled={deletingId === cliente.id}
                           >
                             <Trash2 className="w-4 h-4 text-red-600" />
@@ -440,6 +444,54 @@ export default function Clientes() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(clienteToDelete)}
+        onClose={() => setClienteToDelete(null)}
+        title="Confirmar eliminación"
+        size="md"
+      >
+        <div className="space-y-4">
+          <HelpCallout
+            title="Antes de eliminar"
+            description="Solo elimina un cliente si fue creado por error. Si ya tiene trabajos o pagos asociados, el sistema no lo dejará borrar."
+            tone="warning"
+          />
+          {clienteToDelete ? (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+              <p className="font-semibold text-slate-900">{clienteToDelete.nombre}</p>
+              <p className="mt-1 text-slate-600">
+                Trabajos registrados: {clienteToDelete.cantidadTrabajos}
+              </p>
+              <p className="mt-1 text-slate-600">
+                Saldo pendiente: {formatCurrency(clienteToDelete.saldoPendiente)}
+              </p>
+            </div>
+          ) : null}
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <Button type="button" variant="outline" className="flex-1" onClick={() => setClienteToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              className="flex-1"
+              disabled={!clienteToDelete || deletingId === clienteToDelete.id}
+              onClick={() => {
+                if (!clienteToDelete) {
+                  return;
+                }
+
+                const deletingClienteId = clienteToDelete.id;
+                setClienteToDelete(null);
+                handleDelete(deletingClienteId);
+              }}
+            >
+              {clienteToDelete && deletingId === clienteToDelete.id ? 'Eliminando...' : 'Sí, eliminar cliente'}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

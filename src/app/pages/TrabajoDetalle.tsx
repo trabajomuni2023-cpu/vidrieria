@@ -8,6 +8,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { HelpCallout } from '../components/ui/HelpCallout';
 import { formatCurrency, formatDate } from '../lib/utils';
 import { toast } from 'sonner';
 import { getClientes, type Cliente } from '../lib/clientes-api';
@@ -314,6 +315,12 @@ export default function TrabajoDetalle() {
           <Card>
             <CardHeader><CardTitle>Acciones</CardTitle></CardHeader>
             <CardContent className="space-y-2">
+              <HelpCallout
+                title="Qué hacer aquí"
+                description="Usa estas acciones solo cuando el trabajo realmente avanzó, se entregó o hubo que cancelarlo."
+                tone="info"
+                className="mb-4"
+              />
               <Button className="w-full" onClick={() => setIsModalPagoOpen(true)} disabled={isTrabajoCancelado}>
                 <CreditCard className="h-4 w-4" />
                 Registrar pago

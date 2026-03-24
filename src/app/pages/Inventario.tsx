@@ -7,6 +7,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/input';
 import { Select } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { HelpCallout } from '../components/ui/HelpCallout';
 import { formatCurrency } from '../lib/utils';
 import { Link } from 'react-router';
 import { toast } from 'sonner';
@@ -244,6 +245,12 @@ export default function Inventario() {
           </Button>
         </div>
       </div>
+
+      <HelpCallout
+        title="Orden recomendado"
+        description="Primero crea el producto. Después usa Entrada cuando compras material y Salida cuando ese material se consume o se pierde."
+        tone="info"
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card><CardContent className="p-6"><div className="flex items-center justify-between"><div><p className="text-sm text-gray-600">Total productos</p><p className="text-2xl font-bold text-gray-900 mt-1">{productos.length}</p></div><div className="w-12 h-12 rounded-lg flex items-center justify-center bg-[var(--brand-100)]"><Package className="w-6 h-6 text-[var(--brand-600)]" /></div></div></CardContent></Card>

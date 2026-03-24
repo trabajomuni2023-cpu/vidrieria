@@ -13,6 +13,8 @@ import {
   LogOut,
   Calendar,
   Search,
+  CircleHelp,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useEffect, useState } from 'react';
@@ -20,6 +22,9 @@ import { clearAuthSession, getAuthSession, type AuthUser } from '../lib/auth';
 import { getMe } from '../lib/auth-api';
 import { getConfiguracion } from '../lib/configuracion-api';
 import { applyThemePreferences, type ThemePaletteId } from '../lib/theme-preferences';
+import { Modal } from './ui/Modal';
+import { Button } from './ui/button';
+import { markOnboardingSeen, hasSeenOnboarding } from '../lib/onboarding';
 
 const menuItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -43,6 +48,7 @@ export default function Layout() {
     nombreComercial: 'Vidriería',
     logoUrl: null,
   });
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const syncUser = async () => {
@@ -59,6 +65,9 @@ export default function Layout() {
           contentCustomColor: config.negocio.contentCustomColor || undefined,
           sidebarCustomColor: config.negocio.sidebarCustomColor || undefined,
         });
+        if (!hasSeenOnboarding()) {
+          setShowOnboarding(true);
+        }
       } catch {
         clearAuthSession();
         navigate('/login');
@@ -79,6 +88,11 @@ export default function Layout() {
   const handleLogout = () => {
     clearAuthSession();
     navigate('/login');
+  };
+
+  const handleCloseOnboarding = () => {
+    markOnboardingSeen();
+    setShowOnboarding(false);
   };
 
   return (
@@ -176,6 +190,10 @@ export default function Layout() {
             </div>
 
             <div className="hidden items-center justify-end gap-3 sm:gap-4 lg:flex lg:justify-end">
+              <Button type="button" variant="outline" onClick={() => setShowOnboarding(true)}>
+                <CircleHelp className="h-4 w-4" />
+                Ayuda rápida
+              </Button>
               <div className="hidden min-w-0 items-center gap-3 border-l border-gray-200 pl-3 sm:flex sm:pl-4">
                 <div className="min-w-0 text-right">
                   <p className="text-sm font-medium text-gray-900">{user?.nombre || 'Usuario'}</p>
@@ -192,7 +210,13 @@ export default function Layout() {
             className="-mx-3 mt-3 overflow-x-auto border-t-2 px-3 pt-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] lg:hidden"
             style={{ borderTopColor: 'color-mix(in srgb, var(--brand-600) 24%, #d1d5db)' }}
           >
-            <div className="flex min-w-max gap-2 pb-1">
+            <div className="mb-3 flex justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowOnboarding(true)}>
+                <CircleHelp className="h-4 w-4" />
+                Ayuda rápida
+              </Button>
+            </div>
+            <div className="flex min-w-max snap-x gap-2 pb-1">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = isActivePath(item.path);
@@ -202,7 +226,7 @@ export default function Layout() {
                     key={item.path}
                     to={item.path}
                     className={cn(
-                      'flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors',
+                      'flex snap-start items-center gap-2 rounded-full border px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors',
                       isActive ? 'border-[var(--brand-600)] bg-[var(--brand-600)] text-[var(--brand-contrast)]' : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50',
                     )}
                   >
@@ -219,6 +243,62 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      <Modal isOpen={showOnboarding} onClose={handleCloseOnboarding} title="Guía rápida del sistema" size="lg">
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm text-sky-950">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-white/80 p-2">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-semibold">Así se usa más fácil</p>
+                <p className="mt-1 leading-6">
+                  Si alguien usa el sistema por primera vez, el flujo recomendado es:
+                  <span className="font-medium"> Registro rápido - Trabajo - Pago - Caja</span>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">1. Registro rápido</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Úsalo cuando quieras registrar cliente, trabajo y adelanto inicial en una sola pantalla.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">2. Trabajos</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Desde aquí puedes ver el detalle, cambiar estado y seguir el saldo pendiente de cada pedido.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">3. Pagos y caja</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Cada pago actualiza caja y reportes. Si hubo un error, anúlalo en vez de borrarlo.
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950">
+            <p className="font-semibold">Consejo importante</p>
+            <p className="mt-1 leading-6">
+              Si una acción cambia dinero, estado o historial, el sistema te pedirá confirmación para evitar errores.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" onClick={handleCloseOnboarding}>
+              Cerrar guía
+            </Button>
+            <Button type="button" onClick={handleCloseOnboarding}>
+              Entendido
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
