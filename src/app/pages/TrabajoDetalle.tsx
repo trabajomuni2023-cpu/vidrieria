@@ -159,7 +159,7 @@ export default function TrabajoDetalle() {
     }
   };
 
-  const isTrabajoCancelado = trabajo.estado === 'CANCELADO';
+  const isTrabajoCancelado = trabajo?.estado === 'CANCELADO';
 
   async function handleAnularPago() {
     if (!pagoSeleccionado) {
