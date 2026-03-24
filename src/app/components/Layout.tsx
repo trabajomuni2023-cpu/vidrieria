@@ -1,6 +1,7 @@
 ﻿import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import {
   LayoutDashboard,
+  Plus,
   Users,
   Briefcase,
   CreditCard,
@@ -22,6 +23,7 @@ import { applyThemePreferences, type ThemePaletteId } from '../lib/theme-prefere
 
 const menuItems = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/dashboard/registro', icon: Plus, label: 'Registro rápido' },
   { path: '/dashboard/clientes', icon: Users, label: 'Clientes' },
   { path: '/dashboard/trabajos', icon: Briefcase, label: 'Trabajos' },
   { path: '/dashboard/pagos', icon: CreditCard, label: 'Pagos' },

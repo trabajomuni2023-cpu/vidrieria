@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import Login from './pages/Login';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
+import RegistroRapido from './pages/RegistroRapido';
 import Clientes from './pages/Clientes';
 import ClienteDetalle from './pages/ClienteDetalle';
 import Trabajos from './pages/Trabajos';
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
         Component: Layout,
         children: [
           { index: true, Component: Dashboard },
+          { path: 'registro', Component: RegistroRapido },
           { path: 'clientes', Component: Clientes },
           { path: 'clientes/:id', Component: ClienteDetalle },
           { path: 'cotizaciones', element: <Navigate to="/dashboard/trabajos" replace /> },
