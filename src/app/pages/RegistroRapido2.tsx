@@ -113,6 +113,9 @@ export default function RegistroRapido2() {
   const totalNumero = Number(trabajoForm.total || 0);
   const adelantoNumero = Number(registrarAdelanto ? trabajoForm.adelantoInicial || 0 : 0);
   const saldoCalculado = Math.max(totalNumero - adelantoNumero, 0);
+  const progresoCliente = clienteMode === 'existente' ? Boolean(clienteSeleccionadoId) : Boolean(clienteForm.nombre.trim());
+  const progresoTrabajo = Boolean(trabajoForm.descripcion.trim()) && totalNumero > 0;
+  const progresoPago = !registrarAdelanto || adelantoNumero > 0;
 
   function resetFormulario() {
     setCurrentStep(1);
@@ -315,11 +318,48 @@ export default function RegistroRapido2() {
               <div
                 key={item.step}
                 className={`rounded-2xl border px-4 py-4 transition ${
-                  currentStep === item.step ? 'border-[var(--brand-600)] bg-[var(--brand-50)]' : 'border-slate-200 bg-white'
+                  currentStep === item.step
+                    ? 'border-slate-300 bg-slate-900 text-white shadow-sm'
+                    : 'border-slate-200 bg-white'
                 }`}
               >
-                <p className="text-sm font-semibold text-slate-900">{item.step}. {item.title}</p>
-                <p className="mt-1 text-sm text-slate-600">{item.description}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                        currentStep === item.step
+                          ? 'bg-white text-slate-900'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {item.step}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-semibold ${currentStep === item.step ? 'text-white' : 'text-slate-900'}`}>{item.title}</p>
+                      <p className={`mt-1 text-sm ${currentStep === item.step ? 'text-slate-200' : 'text-slate-600'}`}>{item.description}</p>
+                    </div>
+                  </div>
+
+                  <Badge
+                    variant={
+                      currentStep === item.step
+                        ? 'default'
+                        : item.step === 1
+                          ? (progresoCliente ? 'success' : 'info')
+                          : item.step === 2
+                            ? (progresoTrabajo ? 'success' : 'info')
+                            : (progresoPago ? 'success' : 'info')
+                    }
+                  >
+                    {currentStep === item.step
+                      ? 'Actual'
+                      : item.step === 1
+                        ? (progresoCliente ? 'Listo' : 'Pendiente')
+                        : item.step === 2
+                          ? (progresoTrabajo ? 'Listo' : 'Pendiente')
+                          : (progresoPago ? 'Listo' : 'Pendiente')}
+                  </Badge>
+                </div>
               </div>
             ))}
           </div>
@@ -347,24 +387,34 @@ export default function RegistroRapido2() {
                         onClick={() => setClienteMode('existente')}
                         className={`rounded-2xl border px-4 py-4 text-left transition ${
                           clienteMode === 'existente'
-                            ? 'border-[var(--brand-600)] bg-[var(--brand-50)]'
+                            ? 'border-slate-300 bg-slate-900 text-white shadow-sm'
                             : 'border-slate-200 bg-white hover:bg-slate-50'
                         }`}
                       >
-                        <p className="text-sm font-semibold text-slate-900">Usar cliente existente</p>
-                        <p className="mt-1 text-sm text-slate-600">Más rápido si ya está registrado.</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className={`text-sm font-semibold ${clienteMode === 'existente' ? 'text-white' : 'text-slate-900'}`}>Usar cliente existente</p>
+                            <p className={`mt-1 text-sm ${clienteMode === 'existente' ? 'text-slate-200' : 'text-slate-600'}`}>Más rápido si ya está registrado.</p>
+                          </div>
+                          {clienteMode === 'existente' ? <Badge variant="default">Seleccionado</Badge> : null}
+                        </div>
                       </button>
                       <button
                         type="button"
                         onClick={() => setClienteMode('nuevo')}
                         className={`rounded-2xl border px-4 py-4 text-left transition ${
                           clienteMode === 'nuevo'
-                            ? 'border-[var(--brand-600)] bg-[var(--brand-50)]'
+                            ? 'border-slate-300 bg-slate-900 text-white shadow-sm'
                             : 'border-slate-200 bg-white hover:bg-slate-50'
                         }`}
                       >
-                        <p className="text-sm font-semibold text-slate-900">Crear cliente nuevo</p>
-                        <p className="mt-1 text-sm text-slate-600">Úsalo si todavía no existe.</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className={`text-sm font-semibold ${clienteMode === 'nuevo' ? 'text-white' : 'text-slate-900'}`}>Crear cliente nuevo</p>
+                            <p className={`mt-1 text-sm ${clienteMode === 'nuevo' ? 'text-slate-200' : 'text-slate-600'}`}>Úsalo si todavía no existe.</p>
+                          </div>
+                          {clienteMode === 'nuevo' ? <Badge variant="default">Seleccionado</Badge> : null}
+                        </div>
                       </button>
                     </div>
 
@@ -584,28 +634,45 @@ export default function RegistroRapido2() {
               </CardContent>
             </Card>
 
-            <Card className="border-slate-200/80 shadow-sm">
+            <Card className="border-slate-200/80 shadow-sm xl:sticky xl:top-4">
               <CardHeader>
                 <CardTitle>Resumen rápido</CardTitle>
                 <CardDescription>Así no pierdes el contexto aunque solo veas un paso a la vez.</CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-3 xl:grid-cols-1">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 xl:p-5">
                   <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Cliente</p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">
+                  <p className="mt-2 text-sm font-semibold text-slate-900 xl:text-base">
                     {clienteMode === 'existente' ? clienteSeleccionado?.nombre || 'Pendiente' : clienteForm.nombre || 'Pendiente'}
                   </p>
+                  <p className="mt-2 text-xs text-slate-500 xl:text-sm">
+                    {clienteMode === 'existente'
+                      ? 'Se usará un cliente ya registrado.'
+                      : 'Se creará un cliente nuevo al guardar.'}
+                  </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 xl:p-5">
                   <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Trabajo</p>
-                  <p className="mt-2 text-sm text-slate-900">{trabajoForm.descripcion || 'Pendiente de describir'}</p>
+                  <p className="mt-2 text-sm text-slate-900 xl:text-base">{trabajoForm.descripcion || 'Pendiente de describir'}</p>
+                  <p className="mt-2 text-xs text-slate-500 xl:text-sm">
+                    {totalNumero > 0 ? `Total acordado: ${formatCurrency(totalNumero)}` : 'Aún falta indicar el total.'}
+                  </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Resumen</p>
-                  <div className="mt-2 space-y-2 text-sm">
-                    <div className="flex items-center justify-between"><span className="text-slate-600">Total</span><span className="font-semibold text-slate-900">{formatCurrency(totalNumero)}</span></div>
-                    <div className="flex items-center justify-between"><span className="text-slate-600">Adelanto</span><span className="font-semibold text-emerald-600">{formatCurrency(adelantoNumero)}</span></div>
-                    <div className="flex items-center justify-between"><span className="text-slate-600">Saldo</span><span className="font-semibold text-rose-600">{formatCurrency(saldoCalculado)}</span></div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 xl:p-5">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">Montos</p>
+                  <div className="mt-3 space-y-3 text-sm xl:text-base">
+                    <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
+                      <span className="text-slate-600">Total</span>
+                      <span className="font-semibold text-slate-900">{formatCurrency(totalNumero)}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
+                      <span className="text-slate-600">Adelanto</span>
+                      <span className="font-semibold text-emerald-600">{formatCurrency(adelantoNumero)}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white px-3 py-2">
+                      <span className="text-slate-600">Saldo</span>
+                      <span className="font-semibold text-rose-600">{formatCurrency(saldoCalculado)}</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
